@@ -212,7 +212,7 @@ ok(/id="viewLanding"/.test(html) && /id="homeBtn"/.test(html) && /id="viewHome" 
 const landingHtml = html.slice(html.indexOf('id="viewLanding"'), html.indexOf('<!-- HOME VIEW -->'));
 ok(['Déclaratif pur', 'Observation pure', 'Mixte équilibré', 'Dilemmes &amp; pression', 'Miroir social', 'Tirage intégral', 'Aperçu', 'Standard', 'Approfondi', 'Duo', 'affiner', 'Princesses', 'rapport PDF'].every(t => landingHtml.includes(t)), 'accueil : concept, deux univers, six modes, longueurs, Duo, affiner et rapport expliqués');
 ctx.landing();
-ok((els.landOrb.innerHTML.match(/class="node"/g) || []).length === 12 && els.dots12.children.length === 12 && els.dots7.children.length === 7, 'accueil : illustration (12 archétypes en couronne) et pastilles 12 / 7');
+ok((els.landOrb.innerHTML.match(/class="petal"/g) || []).length === 12 && els.dots12.children.length === 12 && els.dots7.children.length === 7, 'accueil : illustration (rosace de 12 pétales) et pastilles 12 / 7');
 ctx.goHome();
 ok(!els.homeBtn.classList.contains('hidden') && els.viewLanding.classList.contains('hidden') && !els.viewHome.classList.contains('hidden'), 'navigation : bouton Accueil visible hors de la page d\'accueil');
 ctx.goLand();

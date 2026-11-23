@@ -526,8 +526,10 @@
   .land-hero { text-align: center; padding: 4px 0 28px; }
   .orb { width: min(82vw, 340px); margin: 0 auto 18px; }
   .orb svg { display: block; width: 100%; height: auto; }
-  .orb .core { transform-origin: 160px 160px; animation: breathe 6s ease-in-out infinite; }
-  @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
+  .orb { filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.35)); }
+  .orb .petals { transform-origin: 160px 160px; animation: orbit 120s linear infinite; }
+  .orb .petals-in { transform-origin: 160px 160px; animation: orbit 90s linear infinite reverse; }
+  @keyframes orbit { to { transform: rotate(360deg); } }
   .land-title { font-size: 34px; font-weight: 600; letter-spacing: -0.8px; line-height: 1.1; margin: 0 0 12px; text-wrap: balance; }
   .land-lead { font-size: 17px; line-height: 1.5; color: var(--muted); margin: 0 auto 22px; max-width: 34ch; text-wrap: balance; }
   .land-hero .btn-primary { max-width: 360px; }
@@ -621,7 +623,7 @@
   <!-- PAGE D'ACCUEIL (concept) -->
   <div id="viewLanding">
     <section class="land-hero">
-      <div class="orb" id="landOrb" role="img" aria-label="Les douze archétypes autour d'un profil"></div>
+      <div class="orb" id="landOrb" role="img" aria-label="Rosace des douze archétypes"></div>
       <h1 class="land-title">Découvre l'archétype qui te porte</h1>
       <p class="land-lead">Des mises en situation pour te lire de plus près : ce que tu dis de toi, ce que les autres observent. Un profil à lire, à comparer et à partager.</p>
       <button class="btn-primary" onclick="goHome()">Commencer</button>
@@ -876,7 +878,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.13.0';
+const APP_VERSION = 'v0.13.1';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -2021,25 +2023,23 @@ function emailResult() {
 // --- Page d'accueil : illustration, navigation et retour -------------------------------------------
 // Illustration : les 12 archétypes en couronne autour d'un profil au centre (radar qui « respire »).
 function renderLanding() {
-  const keys = Object.keys(META_12), n = keys.length;
-  const cx = 160, cy = 160, R = 118, nodeR = 23;
-  const pt = (i, rad) => { const a = (2 * Math.PI * i) / n - Math.PI / 2; return [cx + rad * Math.cos(a), cy + rad * Math.sin(a)]; };
-  const ring = keys.map((k, i) => pt(i, R).map(v => v.toFixed(1)).join(',')).join(' ');
-  const profile = [0.92, 0.55, 0.4, 0.72, 0.3, 0.86, 0.6, 0.45, 0.28, 0.5, 0.36, 0.66];
-  const core = keys.map((k, i) => pt(i, profile[i] * 78).map(v => v.toFixed(1)).join(',')).join(' ');
-  let nodes = '';
+  // Rosace : un pétale par archétype, aux couleurs de la palette, sur un médaillon crème qui tranche avec le fond bleu nuit.
+  const keys = Object.keys(META_12);
+  const cx = 160, cy = 160;
+  let outer = '', inner = '';
   keys.forEach((k, i) => {
-    const [x, y] = pt(i, R);
-    nodes += `<circle class="node" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${nodeR}" fill="${archColor(k)}"/>` +
-      `<g transform="translate(${(x - 14.4).toFixed(1)} ${(y - 14.4).toFixed(1)}) scale(0.6)" fill="none" stroke="#1c2846" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">${STAMP_ICONS[k]}</g>`;
+    const a = (i * 360) / keys.length;
+    outer += `<ellipse class="petal" cx="${cx}" cy="${cy - 74}" rx="21" ry="52" transform="rotate(${a} ${cx} ${cy})" fill="${archColor(k, true)}" fill-opacity="0.9"/>`;
+    inner += `<ellipse cx="${cx}" cy="${cy - 40}" rx="11" ry="26" transform="rotate(${a + 15} ${cx} ${cy})" fill="${archColor(k)}" stroke="#fbf8f3" stroke-width="1.5"/>`;
   });
   document.getElementById('landOrb').innerHTML =
     `<svg viewBox="0 0 320 320" focusable="false" aria-hidden="true">` +
-    `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>` +
-    `<circle cx="${cx}" cy="${cy}" r="${R * 0.66}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>` +
-    `<polygon points="${ring}" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>` +
-    `<polygon class="core" points="${core}" fill="rgba(235,207,169,0.34)" stroke="#ebcfa9" stroke-width="2.4" stroke-linejoin="round"/>` +
-    `<circle cx="${cx}" cy="${cy}" r="4" fill="#ebcfa9"/>` + nodes + `</svg>`;
+    `<circle cx="${cx}" cy="${cy}" r="156" fill="#fbf8f3"/>` +
+    `<circle cx="${cx}" cy="${cy}" r="148" fill="none" stroke="#1c2846" stroke-opacity="0.18" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round"/>` +
+    `<g class="petals">${outer}</g><g class="petals-in">${inner}</g>` +
+    `<circle cx="${cx}" cy="${cy}" r="25" fill="#1c2846"/>` +
+    `<path d="M160 142 L164.5 155.5 L178 160 L164.5 164.5 L160 178 L155.5 164.5 L142 160 L155.5 155.5 Z" fill="#ebcfa9"/>` +
+    `</svg>`;
   const dots = (id, list) => {
     const box = document.getElementById(id);
     box.innerHTML = '';

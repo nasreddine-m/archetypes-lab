@@ -16,6 +16,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.8.0 | 2026-11-23 | Tutoiement | Tout le contenu passe au **tutoiement** (200 questions, synthèse, interface), choix de l'auteur pour un public jeune ; charte et contrôle automatique inversés |
 | v0.9.0 | 2026-11-23 | Affinage visuel | Même identité (bleu nuit et or), interface plus claire : accueil simplifié, mode replié, question sans surtitre, résultats à barres, radar sans étiquettes coupées, états de focus, animation discrète, zoom autorisé ; « Déesses » devient « Princesses » dans l'intitulé |
 | v0.10.0 | 2026-11-23 | Suite | Les quatre améliorations : historique local, partage (carte image + texte), « Affiner » (+10 questions sur la même session), seuils de force du profil calibrés sur des réponses au hasard |
+| v0.13.1 | 2026-11-23 | Illustration d'accueil | Le radar du hero (qui évoquait un oiseau) est remplacé par une rosace de 12 pétales aux couleurs des archétypes, sur un médaillon crème |
 | v0.13.0 | 2026-11-23 | Alternance et icônes | Bandes crème / bleu nuit sur toutes les pages, petites icônes sur l'accueil ; mode clair reporté |
 | v0.12.2 | 2026-11-23 | Vocabulaire | « Six façons de jouer » devient « Six façons de participer » (le vocabulaire de jeu est évité dans l'interface) |
 | v0.12.1 | 2026-11-23 | Finitions | Radar sur panneau crème (comme le rapport PDF), polices moins lourdes |
