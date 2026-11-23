@@ -96,3 +96,28 @@ analyse('12 Archétypes', ctx.META_12, ctx.BANK_12);
 simulate('12 Archétypes', ctx.META_12, ctx.BANK_12);
 analyse('7 Déesses', ctx.META_7, ctx.BANK_7);
 simulate('7 Déesses', ctx.META_7, ctx.BANK_7);
+
+// Simulation par mode de tirage (scoring ajusté, répondant aléatoire) : un mode peut être déséquilibré
+// même si la banque entière est équilibrée.
+function simulateModes(name, meta, bank, runs = 20000) {
+  const keys = Object.keys(meta);
+  const modes = {
+    'Déclaratif': q => q.m === 'Déclaratif', 'Observation': q => q.m === 'Observation',
+    'Dilemmes': q => q.t === 'dilemme', 'Miroir': q => q.t === 'miroir', 'Intégral': () => true,
+  };
+  console.log(`\n--- Par mode, ${name} (ajusté ; idéal ${(100 / keys.length).toFixed(1)}% chacun) ---`);
+  for (const [label, f] of Object.entries(modes)) {
+    const pool = bank.filter(f), top = Object.fromEntries(keys.map(k => [k, 0]));
+    for (let r = 0; r < runs; r++) {
+      const qs = pool.slice().sort(() => Math.random() - 0.5).slice(0, 10);
+      const sc = Object.fromEntries(keys.map(k => [k, 0]));
+      for (const q of qs) { const o = q.o[Math.floor(Math.random() * q.o.length)]; sc[o[1]] += 2; sc[o[2]] += 1; }
+      const tieRank = {}; keys.slice().sort(() => Math.random() - 0.5).forEach((k, i) => tieRank[k] = i);
+      top[ctx.rankKeys(ctx.adjustScores(sc, qs, keys), sc, tieRank)[0]]++;
+    }
+    const sh = Object.entries(top).map(([k, v]) => [k, 100 * v / runs]).sort((a, b) => a[1] - b[1]);
+    console.log(label.padEnd(12) + `n=${String(pool.length).padStart(3)}  min ${sh[0][1].toFixed(1)}% (${sh[0][0]})  max ${sh[sh.length - 1][1].toFixed(1)}% (${sh[sh.length - 1][0]})`);
+  }
+}
+simulateModes('12 Archétypes', ctx.META_12, ctx.BANK_12);
+simulateModes('7 Déesses', ctx.META_7, ctx.BANK_7);
