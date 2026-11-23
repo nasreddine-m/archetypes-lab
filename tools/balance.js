@@ -11,7 +11,7 @@ const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 const dataPart = script.split('let state')[0];
 const ctx = {};
 vm.createContext(ctx);
-vm.runInContext(dataPart + ';this.META_12=META_12;this.META_7=META_7;this.BANK_12=BANK_12;this.BANK_7=BANK_7;', ctx);
+vm.runInContext(dataPart + ';this.META_12=META_12;this.META_7=META_7;this.BANK_12=BANK_12;this.BANK_7=BANK_7;this.adjustScores=adjustScores;this.rankKeys=rankKeys;', ctx);
 
 function analyse(name, meta, bank) {
   const keys = Object.keys(meta);
@@ -61,7 +61,8 @@ function analyse(name, meta, bank) {
 function simulate(name, meta, bank, runs = 20000) {
   const keys = Object.keys(meta);
   const top1 = Object.fromEntries(keys.map(k => [k, 0]));
-  let ties = 0;
+  const top1Adj = Object.fromEntries(keys.map(k => [k, 0]));
+  let ties = 0, tiesAdj = 0;
   for (let r = 0; r < runs; r++) {
     const qs = bank.slice().sort(() => Math.random() - 0.5).slice(0, 10);
     const sc = Object.fromEntries(keys.map(k => [k, 0]));
@@ -69,14 +70,26 @@ function simulate(name, meta, bank, runs = 20000) {
       const o = q.o[Math.floor(Math.random() * q.o.length)];
       sc[o[1]] += 2; sc[o[2]] += 1;
     }
-    const sorted = Object.entries(sc).sort((a, b) => b[1] - a[1]);
-    if (sorted[0][1] === sorted[1][1]) ties++;
-    top1[sorted[0][0]]++;
+    // Tirage de départage aléatoire (comme dans l'application : tieRank par session)
+    const tieRank = {};
+    keys.slice().sort(() => Math.random() - 0.5).forEach((k, i) => tieRank[k] = i);
+    const zero = Object.fromEntries(keys.map(k => [k, 0]));
+    const rawOrder = ctx.rankKeys(sc, zero, tieRank);   // brut, départage aléatoire
+    if (sc[rawOrder[0]] === sc[rawOrder[1]]) ties++;
+    top1[rawOrder[0]]++;
+    const adj = ctx.adjustScores(sc, qs, keys);          // scoring v0.2.0 (code réel de l'app)
+    const adjOrder = ctx.rankKeys(adj, sc, tieRank);
+    if (adj[adjOrder[0]] === adj[adjOrder[1]]) tiesAdj++;
+    top1Adj[adjOrder[0]]++;
   }
-  console.log(`\n--- Simulation ${name} : ${runs} répondants aléatoires (10 q.) ---`);
-  console.log(`Parts attendues si équilibré : ${(100 / keys.length).toFixed(1)}% chacun ; égalité en tête du classement : ${(100 * ties / runs).toFixed(1)}%`);
-  Object.entries(top1).sort((a, b) => b[1] - a[1])
-    .forEach(([k, v]) => console.log(k.padEnd(18) + ((100 * v / runs).toFixed(1) + '%').padStart(7)));
+  const pct = v => (100 * v / runs).toFixed(1) + '%';
+  console.log(`
+--- Simulation ${name} : ${runs} répondants aléatoires (10 q.) ---`);
+  console.log(`Part attendue si équilibré : ${(100 / keys.length).toFixed(1)}% chacun`);
+  console.log(`Égalité en tête : brut ${pct(ties)}  |  ajusté ${pct(tiesAdj)}`);
+  console.log('Archétype'.padEnd(18) + 'brut'.padStart(8) + 'ajusté'.padStart(9));
+  Object.entries(top1Adj).sort((a, b) => b[1] - a[1])
+    .forEach(([k, v]) => console.log(k.padEnd(18) + pct(top1[k]).padStart(8) + pct(v).padStart(9)));
 }
 
 analyse('12 Archétypes', ctx.META_12, ctx.BANK_12);

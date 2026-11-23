@@ -447,6 +447,7 @@
       </div>
     </div>
 
+    <div id="notice" class="duo-banner hidden"></div>
     <div id="duoSavedBox" class="duo-banner hidden"></div>
 
     <button class="btn-primary" onclick="startQuiz()">Lancer la session (10 questions)</button>
@@ -488,6 +489,7 @@
 
     <div class="card">
       <label class="field-label">Classement détaillé</label>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Indice ajusté : 100 = niveau du hasard, au-dessus = affinité marquée.</div>
       <div id="rankingList"></div>
     </div>
 
@@ -610,7 +612,7 @@ const BANK_7 = [
   {id:30,m:"Observation",t:"dilemme",a:"Réflexe sous pression",q:"RÉFLEXE SOUS PRESSION : Un événement annule votre plan initial à la dernière minute :",o:[["Vous rebâtissez immédiatement un plan B logique en 3 étapes.","Athéna","Héra"],["Vous improvisez avec enthousiasme et transformez l'imprévu en aventure.","Artémis","Aphrodite"],["Vous veillez d'abord à ce que tout votre entourage soit rassuré et organisé.","Déméter","Héra"],["Vous savourez ce temps libéré pour vous recentrer au calme.","Hestia","Perséphone"]]},
   {id:31,m:"Observation",t:"miroir",a:"Attaque injuste",q:"OBSERVATION : Quelqu'un critique publiquement une de ses amies ou collègues :",o:[["Elle intervient immédiatement avec fermeté pour défendre son amie.","Artémis","Déméter"],["Elle démonte l'argumentaire de l'attaquant avec une logique implacable.","Athéna","Héra"],["Elle console et soutient son amie en privé avec une grande bienveillance.","Déméter","Perséphone"],["Elle retourne la situation avec finesse et élégance sans perdre son calme.","Aphrodite","Hestia"]]},
   {id:32,m:"Observation",t:"miroir",a:"Allure et style",q:"INDICE VISUEL : Quelle signature dégage spontanément son allure ?",o:[["Élégance structurée, allure souveraine et tenue impeccable.","Héra","Athéna"],["Pratique, libre de mouvement, dynamique et naturelle.","Artémis","Athéna"],["Sensuelle, créative, expressive, attentive aux matières et aux couleurs.","Aphrodite","Perséphone"],["Sobre, intemporelle, discrète et confortable.","Hestia","Déméter"]]},
-  {id:33,m:"Observation",t:"dilemme",a:"Dilemme à coût réel",q:"ARBITRAGE FORCÉ : Vous devez renoncer à l'un de ces 4 éléments pendant 3 ans :",o:[["La reconnaissance officielle de votre statut ou de votre titre.","Artémis","Hestia"],["La possibilité de décider seule de vos horaires et déplacements.","Héra","Déméter"],["Les moments d'intimité créative, artistique ou passionnelle.","Athéna","Hestia"],["La proximité quotidienne avec votre cercle familial ou affectif.","Artémis","Athéna"]]},
+  {id:33,m:"Observation",t:"dilemme",a:"Dilemme à coût réel",q:"ARBITRAGE FORCÉ : Vous devez renoncer à l'un de ces 4 éléments pendant 3 ans :",o:[["La reconnaissance officielle de votre statut ou de votre titre.","Hestia","Artémis"],["La possibilité de décider seule de vos horaires et déplacements.","Héra","Déméter"],["Les moments d'intimité créative, artistique ou passionnelle.","Athéna","Hestia"],["La proximité quotidienne avec votre cercle familial ou affectif.","Artémis","Athéna"]]},
   {id:34,m:"Observation",t:"miroir",a:"Prise de parole en réunion",q:"OBSERVATION : Comment intervient-elle dans une réunion stratégique ?",o:[["Elle synthétise les enjeux et propose la décision la plus rationnelle.","Athéna","Héra"],["Elle défend avec passion une idée nouvelle qui bouscule les habitudes.","Aphrodite","Artémis"],["Elle veille à ce que chacun ait pu s'exprimer et que l'alliance tienne.","Déméter","Héra"],["Elle parle peu, mais sa remarque finale recentre toute la salle.","Hestia","Perséphone"]]},
   {id:35,m:"Observation",t:"miroir",a:"Décodage de style",q:"OBSERVATION INDIRECTE : Comment passe-t-elle un questionnaire comme celui-ci ?",o:[["Elle analyse la logique des questions et cherche le modèle sous-jacent.","Athéna","Hestia"],["Elle répond à l'intuition en se laissant guider par ce qu'elle ressent sur le moment.","Perséphone","Aphrodite"],["Elle choisit rapidement les options qui préservent sa liberté d'action.","Artémis","Athéna"],["Elle pense à l'impact de ses choix sur ses relations et son entourage.","Déméter","Héra"]]},
   {id:36,m:"Observation",t:"obs_gen",a:"Gestion d'un budget",q:"OBSERVATION : Comment utilise-t-elle un budget libre ou un gain inattendu ?",o:[["Elle investit dans un projet stratégique ou une formation pointue.","Athéna","Héra"],["Elle s'offre un voyage d'exploration, un défi sportif ou du matériel.","Artémis","Perséphone"],["Elle fait plaisir à ses proches ou améliore le confort du foyer.","Déméter","Héra"],["Elle s'offre une œuvre, une expérience esthétique ou un moment d'exception.","Aphrodite","Hestia"]]},
@@ -630,10 +632,41 @@ const BANK_7 = [
   {id:50,m:"Observation",t:"dilemme",a:"Choix final d'observation",q:"TEST ULTIMATUM : Quelle empreinte laisse-t-elle naturellement derrière elle ?",o:[["La clarté, l'intelligence stratégique et la maîtrise.","Athéna","Hestia"],["La liberté, le courage et le refus des compromissions.","Artémis","Athéna"],["La chaleur humaine, la loyauté et le sentiment d'être protégé.","Déméter","Héra"],["La beauté, l'inspiration et l'élan vital.","Aphrodite","Perséphone"]]}
 ];
 
+// --- Scoring (v0.2.0) -------------------------------------------------------
+// Les options de la banque ne sont pas équilibrées : certains archétypes (Sage,
+// Souverain...) apparaissent bien plus souvent que d'autres. Le score brut est donc
+// divisé par l'« exposition » : les points qu'un répondant au hasard obtiendrait
+// en moyenne sur les questions réellement répondues. Indice 100 = niveau du hasard.
+function computeExposure(questions, keys) {
+  const E = {};
+  keys.forEach(k => E[k] = 0);
+  questions.forEach(q => q.o.forEach(([, p, s]) => {
+    if (p in E) E[p] += 2 / q.o.length;
+    if (s in E) E[s] += 1 / q.o.length;
+  }));
+  return E;
+}
+
+function adjustScores(raw, answered, keys) {
+  const E = computeExposure(answered, keys);
+  const adj = {};
+  keys.forEach(k => adj[k] = E[k] > 0 ? Math.round((raw[k] / E[k]) * 100) : 0);
+  return adj;
+}
+
+// Tri décroissant par indice, puis score brut, puis ordre aléatoire propre à la
+// session (tieRank) : plus de favoritisme pour les premiers archétypes de la liste.
+function rankKeys(adj, raw, tieRank) {
+  return Object.keys(adj).sort((a, b) =>
+    (adj[b] - adj[a]) || (raw[b] - raw[a]) || ((tieRank[a] || 0) - (tieRank[b] || 0)));
+}
+
 let state = {
   universe: '12',
   mode: 'decl',
   questions: [],
+  answered: [],
+  tieRank: {},
   idx: 0,
   scores: {},
   timerId: null,
@@ -741,7 +774,11 @@ function startQuiz() {
   state.scores = {};
   Object.keys(meta).forEach(k => state.scores[k] = 0);
   state.questions = drawQuestions(state.universe, state.mode);
+  state.answered = [];
+  state.tieRank = {};
+  shuffleArray(Object.keys(meta)).forEach((k, i) => state.tieRank[k] = i);
   state.idx = 0;
+  document.getElementById('notice').classList.add('hidden');
 
   document.getElementById('viewHome').classList.add('hidden');
   document.getElementById('viewResult').classList.add('hidden');
@@ -782,9 +819,8 @@ function renderQuestion() {
       timerEl.textContent = `${state.timeLeft}s`;
       if (state.timeLeft <= 3) timerEl.classList.add('urgent');
       if (state.timeLeft <= 0) {
-        clearInterval(state.timerId);
-        const randOpt = shuffledOpts[Math.floor(Math.random() * shuffledOpts.length)];
-        chooseOption(randOpt[1], randOpt[2]);
+        // Temps écoulé : la question est passée sans point (pas de réponse aléatoire).
+        skipQuestion();
       }
     }, 1000);
   } else {
@@ -796,10 +832,25 @@ function chooseOption(primary, secondary) {
   clearInterval(state.timerId);
   if (state.scores[primary] !== undefined) state.scores[primary] += 2;
   if (state.scores[secondary] !== undefined) state.scores[secondary] += 1;
+  state.answered.push(state.questions[state.idx]);
+  nextQuestion();
+}
 
+function skipQuestion() {
+  clearInterval(state.timerId);
+  nextQuestion();
+}
+
+function nextQuestion() {
   state.idx++;
   if (state.idx < 10) {
     renderQuestion();
+  } else if (state.answered.length === 0) {
+    // Rien de répondu (chrono expiré 10 fois) : pas de profil à calculer.
+    goHome();
+    const n = document.getElementById('notice');
+    n.textContent = 'Aucune réponse enregistrée : le temps est écoulé sur les 10 questions. Relancez une session ou désactivez le chronomètre.';
+    n.classList.remove('hidden');
   } else {
     showResults();
   }
@@ -815,24 +866,32 @@ function showResults() {
   document.getElementById('viewResult').classList.remove('hidden');
 
   const meta = state.universe === '12' ? META_12 : META_7;
-  const sorted = Object.entries(state.scores).sort((a, b) => b[1] - a[1]);
-  const top1 = sorted[0][0];
-  const top2 = sorted[1][0];
+  const keys = Object.keys(meta);
+  const adj = adjustScores(state.scores, state.answered, keys);
+  const order = rankKeys(adj, state.scores, state.tieRank);
+  const top1 = order[0];
+  const top2 = order[1];
   const subj = document.getElementById('subjectName').value.trim() || 'Profil';
   const modeLabel = document.querySelector(`.mode-card[data-mode="${state.mode}"] .mode-title`).textContent;
+  const skipped = 10 - state.answered.length;
 
-  state.lastScores = { ...state.scores };
+  state.lastScores = { adj: { ...adj }, order: order.slice() };
 
   document.getElementById('resSubject').textContent = `${subj} • ${modeLabel}`;
   document.getElementById('resSignature').textContent = `${meta[top1].full} — ${meta[top2].full}`;
-  document.getElementById('resSummary').innerHTML =
-    `<strong>Moteur :</strong> ${meta[top1].motor}<br><strong>Ombre :</strong> ${meta[top1].shadow}`;
+  let summary = `<strong>Moteur :</strong> ${meta[top1].motor}<br><strong>Ombre :</strong> ${meta[top1].shadow}`;
+  if (adj[top1] === adj[top2]) {
+    summary += `<br><em>Égalité entre ${meta[top1].full} et ${meta[top2].full} : ordre indicatif.</em>`;
+  }
+  if (skipped > 0) {
+    summary += `<br><em>${skipped} question${skipped > 1 ? 's' : ''} sans réponse (temps écoulé), non comptée${skipped > 1 ? 's' : ''}.</em>`;
+  }
+  document.getElementById('resSummary').innerHTML = summary;
 
   const duoDiag = document.getElementById('duoDiagnostic');
   if (state.duoSaved && state.duoSaved.universe === state.universe) {
-    const prevSorted = Object.entries(state.duoSaved.scores).sort((a, b) => b[1] - a[1]);
-    const p1 = prevSorted[0][0];
-    const p2 = prevSorted[1][0];
+    const p1 = state.duoSaved.order[0];
+    const p2 = state.duoSaved.order[1];
     const aligned = (p1 === top1);
     duoDiag.classList.remove('hidden');
     duoDiag.innerHTML =
@@ -848,7 +907,8 @@ function showResults() {
 
   const listEl = document.getElementById('rankingList');
   listEl.innerHTML = '';
-  sorted.forEach(([key, val], i) => {
+  order.forEach((key, i) => {
+    const val = adj[key];
     const row = document.createElement('div');
     row.className = 'rank-item';
     row.innerHTML = `
@@ -859,12 +919,12 @@ function showResults() {
           <div class="rank-desc">${meta[key].motor}</div>
         </div>
       </div>
-      <div class="rank-score">${val} pts</div>
+      <div class="rank-score">${val}</div>
     `;
     listEl.appendChild(row);
   });
 
-  drawRadar(Object.keys(meta), state.scores, state.duoSaved ? state.duoSaved.scores : null);
+  drawRadar(keys, adj, state.duoSaved ? state.duoSaved.scores : null);
 }
 
 function drawRadar(keys, scoresA, scoresB) {
@@ -882,7 +942,7 @@ function drawRadar(keys, scoresA, scoresB) {
   const maxR = 112;
   const n = keys.length;
   const allVals = [...Object.values(scoresA), ...(scoresB ? Object.values(scoresB) : [])];
-  const maxVal = Math.max(8, ...allVals);
+  const maxVal = Math.max(200, ...allVals); // indice : 100 = niveau du hasard
 
   const accent = getComputedStyle(document.body).getPropertyValue('--accent').trim();
   const accent2 = getComputedStyle(document.body).getPropertyValue('--accent-2').trim();
@@ -949,7 +1009,8 @@ function prepareDuoCompare() {
   state.duoSaved = {
     universe: state.universe,
     modeLabel: modeLabel,
-    scores: { ...state.lastScores }
+    scores: { ...state.lastScores.adj },
+    order: state.lastScores.order.slice()
   };
   document.getElementById('duoIndicator').textContent = 'Mode Duo Actif';
   const box = document.getElementById('duoSavedBox');
