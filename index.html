@@ -388,6 +388,31 @@
     margin-bottom: 14px;
   }
   .hidden { display: none !important; }
+  .len-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .len-btn {
+    background: var(--card-soft);
+    border: 1.5px solid var(--border);
+    border-radius: 13px;
+    padding: 10px 6px;
+    text-align: center;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .len-btn.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .len-btn:disabled { opacity: 0.45; cursor: default; }
+  .len-num { font-size: 20px; font-weight: 800; }
+  .len-name { font-size: 12px; font-weight: 700; margin-top: 1px; }
+  .len-desc { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+  .len-note { font-size: 11.5px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
   .synth-p {
     margin: 0 0 10px;
     font-size: 14px;
@@ -427,19 +452,35 @@
     </div>
 
     <div class="card">
-      <label class="field-label">Mode de tirage dynamique (10 questions / 50)</label>
+      <label class="field-label">Longueur de la session</label>
+      <div class="len-grid" id="lenGrid">
+        <button class="len-btn" data-len="10" onclick="setLength(10)">
+          <div class="len-num">10</div><div class="len-name">Aperçu</div><div class="len-desc">≈ 2 min</div>
+        </button>
+        <button class="len-btn active" data-len="20" onclick="setLength(20)">
+          <div class="len-num">20</div><div class="len-name">Standard</div><div class="len-desc">≈ 4-5 min</div>
+        </button>
+        <button class="len-btn" data-len="30" onclick="setLength(30)">
+          <div class="len-num">30</div><div class="len-name">Approfondi</div><div class="len-desc">≈ 7 min</div>
+        </button>
+      </div>
+      <div class="len-note" id="lenNote">Plus de questions, résultat plus fiable. L'aperçu donne surtout un duo probable.</div>
+    </div>
+
+    <div class="card">
+      <label class="field-label">Mode de tirage dynamique</label>
       <div class="mode-grid" id="modeGrid">
         <button class="mode-card active" data-mode="decl" onclick="selectMode('decl')">
           <div class="mode-title">1. Déclaratif Pur</div>
-          <div class="mode-desc">10 questions tirées parmi les 25 items d'introspection.</div>
+          <div class="mode-desc">Questions tirées parmi les 50 items d'introspection.</div>
         </button>
         <button class="mode-card" data-mode="obs" onclick="selectMode('obs')">
           <div class="mode-title">2. Observation Pure</div>
-          <div class="mode-desc">10 faits observables tirés parmi les 25 items externes.</div>
+          <div class="mode-desc">Faits observables tirés parmi les 50 items externes.</div>
         </button>
         <button class="mode-card" data-mode="mix" onclick="selectMode('mix')">
           <div class="mode-title">3. Mixte Équilibré</div>
-          <div class="mode-desc">5 questions déclaratives + 5 d'observation au hasard.</div>
+          <div class="mode-desc">Moitié de questions déclaratives, moitié d'observation, au hasard.</div>
         </button>
         <button class="mode-card" data-mode="dilemme" onclick="selectMode('dilemme')">
           <div class="mode-title">4. Dilemmes & Pression</div>
@@ -451,7 +492,7 @@
         </button>
         <button class="mode-card" data-mode="random" onclick="selectMode('random')">
           <div class="mode-title">6. Tirage Intégral</div>
-          <div class="mode-desc">10 questions renouvelées parmi la banque complète (50).</div>
+          <div class="mode-desc">Questions renouvelées parmi la banque complète (100).</div>
         </button>
       </div>
     </div>
@@ -472,14 +513,14 @@
     <div id="notice" class="duo-banner hidden"></div>
     <div id="duoSavedBox" class="duo-banner hidden"></div>
 
-    <button class="btn-primary" onclick="startQuiz()">Lancer la session (10 questions)</button>
+    <button class="btn-primary" id="startBtn" onclick="startQuiz()">Lancer la session (20 questions)</button>
     <button id="clearDuoBtn" class="btn-secondary hidden" onclick="clearDuo()">Effacer la comparaison Duo</button>
   </div>
 
   <!-- QUIZ VIEW -->
   <div id="viewQuiz" class="hidden">
     <div class="progress-wrap">
-      <span id="qCounter">Question 1 / 10</span>
+      <span id="qCounter">Question 1 / 20</span>
       <span id="timerDisplay" class="timer-pill hidden">10s</span>
       <span id="qModeBadge">Déclaratif</span>
     </div>
@@ -529,7 +570,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.6.0';
+const APP_VERSION = 'v0.7.0';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -855,6 +896,8 @@ function buildSynthesis(meta, order, adj, answeredCount) {
 let state = {
   universe: '12',
   mode: 'decl',
+  length: 20,          // longueur demandée : 10 (aperçu), 20 (standard), 30 (approfondi)
+  total: 0,            // nombre de questions réellement tirées pour la session en cours
   questions: [],
   answered: [],
   tieRank: {},
@@ -918,29 +961,71 @@ function sampleStratified(pool, count, excludeIds) {
   return shuffleArray(selected);
 }
 
-function drawQuestions(univ, mode) {
+const SESSION_LENGTHS = [10, 20, 30];
+
+// Questions disponibles pour un mode de tirage.
+function poolFor(bank, mode) {
+  if (mode === 'decl') return bank.filter(q => q.m === 'Déclaratif');
+  if (mode === 'obs') return bank.filter(q => q.m === 'Observation');
+  if (mode === 'dilemme') return bank.filter(q => q.t === 'dilemme');
+  if (mode === 'miroir') return bank.filter(q => q.t === 'miroir');
+  return bank;
+}
+
+// Nombre de questions réellement tirées : la longueur demandée, limitée à la taille du mode
+// (ex. Miroir Social ne compte que 21 ou 22 questions). Le mode mixte tire moitié-moitié.
+function effectiveLength(univ, mode, length) {
+  const bank = univ === '12' ? BANK_12 : BANK_7;
+  if (mode === 'mix') {
+    const half = Math.floor(length / 2);
+    return 2 * Math.min(half, poolFor(bank, 'decl').length, poolFor(bank, 'obs').length);
+  }
+  return Math.min(length, poolFor(bank, mode).length);
+}
+
+function drawQuestions(univ, mode, length) {
   const bank = univ === '12' ? BANK_12 : BANK_7;
   const lastIds = getLastUsedIds(univ, mode);
-  let chosen = [];
+  const n = effectiveLength(univ, mode, length);
+  let chosen;
 
-  if (mode === 'decl') {
-    chosen = sampleStratified(bank.filter(q => q.m === 'Déclaratif'), 10, lastIds);
-  } else if (mode === 'obs') {
-    chosen = sampleStratified(bank.filter(q => q.m === 'Observation'), 10, lastIds);
-  } else if (mode === 'mix') {
-    const partDecl = sampleStratified(bank.filter(q => q.m === 'Déclaratif'), 5, lastIds);
-    const partObs = sampleStratified(bank.filter(q => q.m === 'Observation'), 5, lastIds);
+  if (mode === 'mix') {
+    const partDecl = sampleStratified(poolFor(bank, 'decl'), n / 2, lastIds);
+    const partObs = sampleStratified(poolFor(bank, 'obs'), n / 2, lastIds);
     chosen = shuffleArray([...partDecl, ...partObs]);
-  } else if (mode === 'dilemme') {
-    chosen = sampleStratified(bank.filter(q => q.t === 'dilemme'), 10, lastIds);
-  } else if (mode === 'miroir') {
-    chosen = sampleStratified(bank.filter(q => q.t === 'miroir'), 10, lastIds);
   } else {
-    chosen = sampleStratified(bank, 10, lastIds);
+    chosen = sampleStratified(poolFor(bank, mode), n, lastIds);
   }
 
   saveLastUsedIds(univ, mode, chosen.map(q => q.id));
   return chosen;
+}
+
+// Met à jour les boutons de longueur, le libellé du bouton de lancement et la note explicative.
+function updateSessionInfo() {
+  const eff = effectiveLength(state.universe, state.mode, state.length);
+  document.querySelectorAll('.len-btn').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.len) === state.length);
+    b.disabled = !!state.duoSaved;
+  });
+  document.getElementById('startBtn').textContent = `Lancer la session (${eff} questions)`;
+  let text = state.length === 10
+    ? "L'aperçu donne surtout un duo probable : pour un portrait fiable, préférez 20 questions ou plus."
+    : "Plus de questions, résultat plus fiable.";
+  if (state.duoSaved) {
+    text = `Comparaison Duo en cours : longueur verrouillée à ${state.length} questions, comme le passage 1.`;
+  }
+  if (eff < state.length) {
+    text += ` Ce mode ne compte que ${eff} questions : la session est limitée à ${eff}.`;
+  }
+  document.getElementById('lenNote').textContent = text;
+}
+
+function setLength(n) {
+  if (state.duoSaved || !SESSION_LENGTHS.includes(n)) return;
+  state.length = n;
+  try { localStorage.setItem('arch_length', String(n)); } catch (e) {}
+  updateSessionInfo();
 }
 
 function setUniverse(u) {
@@ -951,6 +1036,7 @@ function setUniverse(u) {
   if (state.duoSaved && state.duoSaved.universe !== u) {
     clearDuo();
   }
+  updateSessionInfo();
 }
 
 function selectMode(m) {
@@ -958,13 +1044,15 @@ function selectMode(m) {
   document.querySelectorAll('.mode-card').forEach(el => {
     el.classList.toggle('active', el.dataset.mode === m);
   });
+  updateSessionInfo();
 }
 
 function startQuiz() {
   const meta = state.universe === '12' ? META_12 : META_7;
   state.scores = {};
   Object.keys(meta).forEach(k => state.scores[k] = 0);
-  state.questions = drawQuestions(state.universe, state.mode);
+  state.questions = drawQuestions(state.universe, state.mode, state.length);
+  state.total = state.questions.length;
   state.answered = [];
   state.tieRank = {};
   shuffleArray(Object.keys(meta)).forEach((k, i) => state.tieRank[k] = i);
@@ -980,11 +1068,11 @@ function startQuiz() {
 function renderQuestion() {
   clearInterval(state.timerId);
   const q = state.questions[state.idx];
-  document.getElementById('qCounter').textContent = `Question ${state.idx + 1} / 10`;
+  document.getElementById('qCounter').textContent = `Question ${state.idx + 1} / ${state.total}`;
   document.getElementById('qModeBadge').textContent = q.m;
   document.getElementById('qAxis').textContent = q.a;
   document.getElementById('qText').textContent = q.q;
-  document.getElementById('progressFill').style.width = `${((state.idx + 1) / 10) * 100}%`;
+  document.getElementById('progressFill').style.width = `${((state.idx + 1) / state.total) * 100}%`;
 
   const letters = ['A', 'B', 'C', 'D'];
   const shuffledOpts = shuffleArray(q.o);
@@ -1034,13 +1122,13 @@ function skipQuestion() {
 
 function nextQuestion() {
   state.idx++;
-  if (state.idx < 10) {
+  if (state.idx < state.total) {
     renderQuestion();
   } else if (state.answered.length === 0) {
-    // Rien de répondu (chrono expiré 10 fois) : pas de profil à calculer.
+    // Rien de répondu (chrono expiré à chaque question) : pas de profil à calculer.
     goHome();
     const n = document.getElementById('notice');
-    n.textContent = 'Aucune réponse enregistrée : le temps est écoulé sur les 10 questions. Relancez une session ou désactivez le chronomètre.';
+    n.textContent = `Aucune réponse enregistrée : le temps est écoulé sur les ${state.total} questions. Relancez une session ou désactivez le chronomètre.`;
     n.classList.remove('hidden');
   } else {
     showResults();
@@ -1064,7 +1152,7 @@ function showResults() {
   const top2 = order[1];
   const subj = document.getElementById('subjectName').value.trim() || 'Profil';
   const modeLabel = document.querySelector(`.mode-card[data-mode="${state.mode}"] .mode-title`).textContent;
-  const skipped = 10 - state.answered.length;
+  const skipped = state.total - state.answered.length;
 
   state.lastScores = { adj: { ...adj }, order: order.slice() };
 
@@ -1087,8 +1175,8 @@ function showResults() {
     duoDiag.classList.remove('hidden');
     duoDiag.innerHTML =
       `<strong>Diagnostic Duo (Profil 1 vs Profil 2) :</strong><br>` +
-      `• Passage 1 (${state.duoSaved.modeLabel}) : <strong>${meta[p1].full} — ${meta[p2].full}</strong><br>` +
-      `• Passage 2 (${modeLabel}) : <strong>${meta[top1].full} — ${meta[top2].full}</strong><br>` +
+      `• Passage 1 (${state.duoSaved.modeLabel}, ${state.duoSaved.answered} réponses) : <strong>${meta[p1].full} — ${meta[p2].full}</strong><br>` +
+      `• Passage 2 (${modeLabel}, ${state.answered.length} réponses) : <strong>${meta[top1].full} — ${meta[top2].full}</strong><br>` +
       (aligned
         ? `Alignement fort : la posture perçue correspond directement au moteur dominant.`
         : `Décalage révélé : le moteur <em>${meta[p1].full}</em> s'exprime à travers la posture <em>${meta[top1].full}</em>.`);
@@ -1210,7 +1298,8 @@ function prepareDuoCompare() {
     universe: state.universe,
     modeLabel: modeLabel,
     scores: { ...state.lastScores.adj },
-    order: state.lastScores.order.slice()
+    order: state.lastScores.order.slice(),
+    answered: state.answered.length
   };
   document.getElementById('duoIndicator').textContent = 'Mode Duo Actif';
   const box = document.getElementById('duoSavedBox');
@@ -1219,6 +1308,7 @@ function prepareDuoCompare() {
   document.getElementById('clearDuoBtn').classList.remove('hidden');
 
   if (state.mode === 'decl') selectMode('obs');
+  updateSessionInfo();   // verrouille la longueur pour comparer ce qui est comparable
   goHome();
 }
 
@@ -1227,6 +1317,7 @@ function clearDuo() {
   document.getElementById('duoIndicator').textContent = 'Solo';
   document.getElementById('duoSavedBox').classList.add('hidden');
   document.getElementById('clearDuoBtn').classList.add('hidden');
+  updateSessionInfo();
 }
 
 function goHome() {
@@ -1234,6 +1325,13 @@ function goHome() {
   document.getElementById('viewResult').classList.add('hidden');
   document.getElementById('viewHome').classList.remove('hidden');
 }
+
+// --- Initialisation : longueur mémorisée -------------------------------------
+try {
+  const stored = Number(localStorage.getItem('arch_length'));
+  if (SESSION_LENGTHS.includes(stored)) state.length = stored;
+} catch (e) {}
+updateSessionInfo();
 
 // --- PWA : version affichée + service worker (hors-ligne) -------------------
 document.getElementById('appVersion').textContent = APP_VERSION;

@@ -33,25 +33,27 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
+
+ctx.setLen(10); // les tests historiques supposent 10 questions
 
 // 1. Parcours complet monde 12, toujours l'option 0
 for (const u of ['12', '7']) {
   ctx.setU(u); els.rankingList && (els.rankingList.children = []);
   ctx.start();
-  for (let i = 0; i < 10; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[0][1], q.o[0][2]); }
+  for (let i = 0; i < ctx.S.total; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[0][1], q.o[0][2]); }
   ok(!els.viewResult.classList.contains('hidden'), `monde ${u} : écran résultats affiché`);
-  ok(ctx.S.answered.length === 10, `monde ${u} : 10 réponses comptées`);
+  ok(ctx.S.answered.length === 10 && ctx.S.total === 10, `monde ${u} : 10 réponses comptées`);
   ok(els.resSignature.textContent.includes('—'), `monde ${u} : signature = "${els.resSignature.textContent}"`);
   ok(els.rankingList.children.length === (u === '12' ? 12 : 7), `monde ${u} : classement complet`);
 }
 
 // 2. Chrono expiré sur 3 questions
 ctx.setU('12'); ctx.start();
-for (let i = 0; i < 10; i++) { const q = ctx.S.questions[ctx.S.idx]; i < 3 ? ctx.skip() : ctx.choose(q.o[1][1], q.o[1][2]); }
+for (let i = 0; i < ctx.S.total; i++) { const q = ctx.S.questions[ctx.S.idx]; i < 3 ? ctx.skip() : ctx.choose(q.o[1][1], q.o[1][2]); }
 ok(ctx.S.answered.length === 7, '3 expirées : 7 réponses comptées');
 ok(/3 questions sans réponse/.test(els.resSummary.innerHTML), 'mention des 3 questions sans réponse');
 const total = Object.values(ctx.S.scores).reduce((a, b) => a + b, 0);
@@ -59,16 +61,48 @@ ok(total === 7 * 3, `aucun point pour les questions expirées (total brut ${tota
 
 // 3. Tout expiré
 ctx.start();
-for (let i = 0; i < 10; i++) ctx.skip();
+for (let i = 0; i < ctx.S.total; i++) ctx.skip();
 ok(!els.viewHome.classList.contains('hidden') && !els.notice.classList.contains('hidden'), 'tout expiré : retour accueil + message');
+
+// 3b. Longueurs de session (10 / 20 / 30), modes limités, mode mixte, doublons
+const finish = () => { for (let i = 0; i < ctx.S.total; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[0][1], q.o[0][2]); } };
+for (const u of ['12', '7']) {
+  for (const n of [10, 20, 30]) {
+    ctx.setU(u); ctx.setMode('decl'); ctx.setLen(n); ctx.start();
+    ok(ctx.S.total === n && new Set(ctx.S.questions.map(q => q.id)).size === n, `monde ${u} Déclaratif ${n} : ${n} questions distinctes`);
+    ok(els.qCounter.textContent === `Question 1 / ${n}`, `compteur « ${els.qCounter.textContent} »`);
+    finish();
+    ok(ctx.S.answered.length === n && !els.viewResult.classList.contains('hidden'), `monde ${u} ${n} : session terminée, ${n} réponses`);
+  }
+}
+for (const [u, cap] of [['12', 22], ['7', 21]]) {
+  ctx.setU(u); ctx.setMode('miroir'); ctx.setLen(30);
+  ok(ctx.eff(u, 'miroir', 30) === cap && /\(${cap} questions\)/.test(els.startBtn.textContent) || els.startBtn.textContent.includes('(' + cap + ' questions)'), `monde ${u} Miroir limité à ${cap} (bouton : « ${els.startBtn.textContent} »)`);
+  ok(/ne compte que/.test(els.lenNote.textContent), 'note de limitation affichée');
+  ctx.start(); ok(ctx.S.total === cap && new Set(ctx.S.questions.map(q => q.id)).size === cap, `monde ${u} Miroir 30 : ${cap} questions distinctes`);
+  finish();
+}
+ctx.setU('12'); ctx.setMode('mix'); ctx.setLen(30); ctx.start();
+ok(ctx.S.total === 30 && ctx.S.questions.filter(q => q.m === 'Déclaratif').length === 15 && ctx.S.questions.filter(q => q.m === 'Observation').length === 15, 'mode mixte 30 : 15 déclaratives + 15 observation');
+finish();
+ctx.setMode('random'); ctx.setLen(20); ctx.start();
+ok(ctx.S.total === 20 && new Set(ctx.S.questions.map(q => q.id)).size === 20, 'tirage intégral 20 : 20 questions distinctes');
+finish();
+ctx.setMode('dilemme'); ctx.setLen(30); ctx.start();
+ok(ctx.S.total === 27 && ctx.S.questions.every(q => q.t === 'dilemme'), 'dilemmes 30 (monde 12) : limité à 27, tous de type dilemme');
+finish();
+ok(store['arch_length'] === '30', 'longueur mémorisée (localStorage)');
+ctx.setMode('decl'); ctx.setLen(10);
 
 // 4. Duo
 ctx.start();
-for (let i = 0; i < 10; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[2][1], q.o[2][2]); }
+for (let i = 0; i < ctx.S.total; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[2][1], q.o[2][2]); }
 ctx.duo();
 ctx.start();
-for (let i = 0; i < 10; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[3][1], q.o[3][2]); }
+for (let i = 0; i < ctx.S.total; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[3][1], q.o[3][2]); }
 ok(!els.duoDiagnostic.classList.contains('hidden') && /Passage 1/.test(els.duoDiagnostic.innerHTML), 'duo : diagnostic affiché');
+ok(/10 réponses/.test(els.duoDiagnostic.innerHTML), 'duo : nombre de réponses affiché pour chaque passage');
+ctx.setLen(30); ok(ctx.S.length === 10, 'duo : longueur verrouillée (setLen ignoré)');
 
 // 4b. Synthèse du profil
 const bare = n => n.replace(/^(Le |L')/, ''); // le texte écrit « du Sage », « de l'Innocent »
