@@ -878,7 +878,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.13.2';
+const APP_VERSION = 'v0.13.3';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -1482,7 +1482,6 @@ function renderQuestion() {
   document.getElementById('qModeBadge').textContent = q.m;
   document.getElementById('qText').textContent = q.q;
   const qCard = document.getElementById('qCard');
-  qCard.classList.toggle('paper', state.idx % 2 === 1);   // alternance crème / bleu nuit d'une question à l'autre
   qCard.classList.remove('enter');
   void qCard.offsetWidth;
   qCard.classList.add('enter');
