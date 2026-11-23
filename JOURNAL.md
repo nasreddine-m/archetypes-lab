@@ -9,7 +9,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.1.0 | 2026-11-23 | Base | Import de l'application d'origine (fichier unique), dépôt Git, outil de mesure d'équilibre |
 | v0.2.0 | 2026-11-23 | Scoring | Indice ajusté par l'exposition de chaque archétype, chrono expiré sans point, départage aléatoire, correction Q33 (monde 7) |
 | v0.3.0 | 2026-11-23 | PWA | Installable (manifeste, icônes, écran d'accueil iOS, bouton Installer Chrome), hors-ligne via service worker, version affichée |
-| v0.4.0 | 2026-11-23 | Banque (branche `v0.4-banque`, **en attente de relecture**) | 100 questions par univers (50 → 100), options rééquilibrées : rapport max/min des poids 3,68 → 1,24 (monde 12) et 1,61 → 1,12 (monde 7) |
+| v0.4.0 | 2026-11-23 | Banque (publiée sur `main` pour test par l'auteur, relecture en cours) | 100 questions par univers (50 → 100), options rééquilibrées : rapport max/min des poids 3,68 → 1,24 (monde 12) et 1,61 → 1,12 (monde 7) |
 
 **État actuel :** PWA statique (`index.html` + `manifest.json` + `sw.js` + `icons/`), 2 univers (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, comparaison Duo. Le biais de scoring est fortement réduit (en tête pour un répondant au hasard : 0,3–24 % → 6–13 % dans le monde 12) mais pas supprimé : le déséquilibre est dans la banque de questions elle-même. Tests réels (2026-11-23) : iPhone (Safari) OK — installation, ouverture, hors-ligne en mode avion ; Windows OK après une erreur DNS passagère (`DNS_PROBE_FINISHED_NXDOMAIN`, résolue en relançant, aucun défaut dans l'app). Installation depuis Chrome (icône « Installer ») et hors-ligne sur Windows non encore confirmés.
 
@@ -21,7 +21,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 
 ## Journal des versions et modifications
 
-### v0.4.0 — 2026-11-23 — Banque de 100 questions par univers (branche `v0.4-banque`, non publiée)
+### v0.4.0 — 2026-11-23 — Banque de 100 questions par univers (publiée pour test, relecture en cours)
 - **+100 questions** : ids 51–100 dans chaque univers (25 Déclaratif + 25 Observation par univers). Les 50 questions d'origine sont inchangées. Brouillons dans `docs/drafts/`, relecture dans `docs/revue-questions-v0.4.0.md`.
 - **Conception par plan d'équilibre** : pour chaque sous-ensemble de tirage (Déclaratif, Observation), les archétypes principaux et secondaires ont été planifiés avant la rédaction, de façon à compenser le déficit de chacun (ex. Innocent : principal dans 24 des 50 nouvelles questions du monde 12, contre 2 sur 50 avant). Plan des quadruplets du monde 7 calculé par script.
 - **Reclassement honnête des types** : seules les vraies situations de stress ou de choix forcé portent le type `dilemme` ; les formulations « Que préserve-t-il coûte que coûte ? » remplacent les « renoncer à… » pour éviter la logique inversée (A15, ci-dessous).
@@ -95,7 +95,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | A13 | 2026-11-23 | Banque portée à **100 questions par univers** (demande de l'utilisateur), avec **plan d'équilibre avant rédaction** : comptes cibles d'archétypes principaux/secondaires par sous-ensemble de tirage, puis écriture des questions pour les remplir | Équilibrer après coup en retouchant des options existantes : plus long, et risque de dégrader des questions déjà validées | Ajouter 50 questions sans plan : le biais aurait été simplement dilué |
 | A14 | 2026-11-23 | Les 50 questions d'origine restent **inchangées** ; seul le complément est équilibré | Traçabilité, pas de régression sur du contenu existant, comparaison avant/après propre | Réécrire les anciennes options pour corriger le biais |
 | A15 | 2026-11-23 | Nouveaux arbitrages formulés « Que préserve-t-il coûte que coûte ? » (choix positif) au lieu de « Renoncer à… » | Avec « renoncer », l'archétype noté était celui qui tient le moins à la chose abandonnée : logique inversée, source d'erreur de lecture pour l'utilisateur | Garder la logique inversée des questions d'origine |
-| A16 | 2026-11-23 | Version v0.4.0 **non publiée** tant que les 100 questions ne sont pas relues par l'utilisateur (branche `v0.4-banque`) | Contenu psychologique : seul l'auteur de l'app peut juger si une option représente bien l'archétype. GitHub Pages ne sert que `main` | Publier directement et corriger ensuite |
+| A16 | 2026-11-23 | Version v0.4.0 d'abord sur la branche `v0.4-banque`, puis publiée sur `main` quand l'auteur a demandé à la tester sur lui-même (retour arrière : `git revert` du merge) | Contenu psychologique : seul l'auteur de l'app peut juger si une option représente bien l'archétype. GitHub Pages ne sert que `main` | Publier directement et corriger ensuite |
 | A9 | 2026-11-23 | Ne pas rééquilibrer la banque dans la v0.2.0 | Rééquilibrer demande de réécrire des dizaines d'options et de les relire une à une : c'est un chantier de contenu à part (backlog 2) | Tout corriger d'un coup : version trop large, régression difficile à isoler |
 
 ---
