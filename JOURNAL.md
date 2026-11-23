@@ -234,6 +234,7 @@ Question de l'auteur : quel est le nombre idéal de questions ? Simulation avec 
 | A36 | 2026-11-23 | PDF construit à la main (image JPEG dans un PDF minimal) | Pas de bibliothèque, pas de réseau, rendu identique partout | Texte vectoriel sélectionnable (nécessiterait une police embarquée ou une bibliothèque) |
 | A37 | 2026-11-23 | Couleurs d'archétypes toujours accompagnées du nom ou d'une icône | Certaines paires restent proches pour le daltonisme (voir docs/palette-check.txt) | Couleur seule |
 | A38 | 2026-11-23 | Accueil affiché à chaque ouverture | Demande explicite d'une page d'accueil ; un bouton « Commencer » mène aux réglages | Mémoriser « déjà vu » pour ouvrir directement les réglages |
+| A39 | 2026-11-23 | Garder « archétype » comme mot unique ; ne pas renommer les figures du monde 12 en « princes » | Mot genré pour des figures mixtes, certaines figures ne sont pas des princes (Bouffon, Souverain), chantier large (accueil, fiches, synthèses, PDF, tests) | « Les 12 Princes » en simple étiquette d'onglet |
 | A35 | 2026-11-23 | « Adoucir, tons plus clairs » = éclaircir la palette sombre existante, pas ajouter un mode clair | Reste dans le style d'origine (A26) ; un mode clair serait un chantier à part | Thème clair complet (à proposer si c'était l'intention) |
 | A9 | 2026-11-23 | Ne pas rééquilibrer la banque dans la v0.2.0 | Rééquilibrer demande de réécrire des dizaines d'options et de les relire une à une : c'est un chantier de contenu à part (backlog 2) | Tout corriger d'un coup : version trop large, régression difficile à isoler |
 
