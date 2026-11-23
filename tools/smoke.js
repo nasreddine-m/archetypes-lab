@@ -26,6 +26,7 @@ const ctx = {
   getComputedStyle: () => ({ getPropertyValue: () => '#fff' }),
   window: { devicePixelRatio: 1 },
   setInterval: () => 1, clearInterval: () => {},
+  navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
 vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;`, ctx);
@@ -64,5 +65,23 @@ ctx.duo();
 ctx.start();
 for (let i = 0; i < 10; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[3][1], q.o[3][2]); }
 ok(!els.duoDiagnostic.classList.contains('hidden') && /Passage 1/.test(els.duoDiagnostic.innerHTML), 'duo : diagnostic affiché');
+
+// 5. PWA : fichiers et cohérence des versions
+const path = require('path'), root = path.join(__dirname, '..');
+const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
+ok(manifest.display === 'standalone' && manifest.start_url && manifest.name, 'manifest : champs essentiels');
+const pngSize = f => { const b = fs.readFileSync(path.join(root, f)); return b.readUInt32BE(16) + 'x' + b.readUInt32BE(20); };
+manifest.icons.forEach(i => ok(fs.existsSync(path.join(root, i.src)) && pngSize(i.src) === i.sizes, `icône ${i.src} (${i.purpose}) = ${i.sizes}`));
+ok(manifest.icons.some(i => i.purpose === 'maskable') && manifest.icons.some(i => i.sizes === '512x512' && i.purpose === 'any'), 'icônes 512 any + maskable');
+ok(/rel="manifest" href="manifest.json"/.test(html) && /rel="apple-touch-icon"/.test(html), 'index.html : lien manifest + apple-touch-icon');
+ok(pngSize('icons/apple-touch-icon.png') === '180x180', 'apple-touch-icon 180x180');
+const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+const swVersion = sw.match(/CACHE_VERSION = '([^']+)'/)[1];
+const appVersion = html.match(/APP_VERSION = '([^']+)'/)[1];
+ok(swVersion === appVersion, `version sw.js (${swVersion}) = APP_VERSION (${appVersion})`);
+const shellBlock = sw.match(/const SHELL = \[([\s\S]*?)\];/)[1];
+const shell = [...shellBlock.matchAll(/'\.\/([^']*)'/g)].map(m => m[1] || 'index.html');
+shell.forEach(f => ok(fs.existsSync(path.join(root, f)), `SHELL : ${f} existe`));
+
 console.log(fail ? `\n${fail} ÉCHEC(S)` : '\nTous les tests passent');
 process.exit(fail ? 1 : 0);

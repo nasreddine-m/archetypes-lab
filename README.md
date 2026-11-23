@@ -8,4 +8,6 @@ Outil de réflexion personnelle, pas un diagnostic psychologique.
 - Lancer en local : ouvrir `index.html` dans Chrome.
 - Mesurer l'équilibre des questions : `node tools/balance.js`
 - Test de bout en bout : `node tools/smoke.js`
+- Régénérer les icônes : `powershell -ExecutionPolicy Bypass -File tools/make-icons.ps1`
+- Installer : iPhone → Safari → Partager → « Sur l'écran d'accueil » ; Chrome → icône « Installer » dans la barre d'adresse
 - Historique, décisions et feuille de route : voir [JOURNAL.md](JOURNAL.md)

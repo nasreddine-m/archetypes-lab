@@ -6,6 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Archétypes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>Archétypes — Déclaratif & Observation</title>
 <style>
   :root {
@@ -383,6 +388,13 @@
     margin-bottom: 14px;
   }
   .hidden { display: none !important; }
+  .app-footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 18px;
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -496,9 +508,14 @@
     <button class="btn-primary" onclick="prepareDuoCompare()">Comparer en Duo (Déclaratif vs Observation)</button>
     <button class="btn-secondary" onclick="goHome()">Nouvelle session</button>
   </div>
+
+  <div class="app-footer">Archétypes Lab <span id="appVersion"></span><br>Outil de réflexion personnelle, pas un diagnostic psychologique.</div>
 </div>
 
 <script>
+// Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
+const APP_VERSION = 'v0.3.0';
+
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
   "Sage": { full: "Le Sage", motor: "Chercher la vérité objective et modéliser les systèmes.", shadow: "Paralysie par l'analyse, détachement." },
@@ -1033,6 +1050,14 @@ function goHome() {
   document.getElementById('viewQuiz').classList.add('hidden');
   document.getElementById('viewResult').classList.add('hidden');
   document.getElementById('viewHome').classList.remove('hidden');
+}
+
+// --- PWA : version affichée + service worker (hors-ligne) -------------------
+document.getElementById('appVersion').textContent = APP_VERSION;
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker non enregistré :', err));
+  });
 }
 </script>
 </body>

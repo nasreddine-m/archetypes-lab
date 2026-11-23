@@ -8,14 +8,27 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 |---|---|---|---|
 | v0.1.0 | 2026-11-23 | Base | Import de l'application d'origine (fichier unique), dépôt Git, outil de mesure d'équilibre |
 | v0.2.0 | 2026-11-23 | Scoring | Indice ajusté par l'exposition de chaque archétype, chrono expiré sans point, départage aléatoire, correction Q33 (monde 7) |
+| v0.3.0 | 2026-11-23 | PWA | Installable (manifeste, icônes, écran d'accueil iOS, bouton Installer Chrome), hors-ligne via service worker, version affichée |
 
-**État actuel :** application web statique à fichier unique (`index.html`), 2 univers (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, comparaison Duo. Le biais de scoring est fortement réduit (en tête pour un répondant au hasard : 0,3–24 % → 6–13 % dans le monde 12) mais pas supprimé : le déséquilibre est dans la banque de questions elle-même. Non installable (pas de manifest ni de service worker).
+**État actuel :** PWA statique (`index.html` + `manifest.json` + `sw.js` + `icons/`), 2 univers (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, comparaison Duo. Le biais de scoring est fortement réduit (en tête pour un répondant au hasard : 0,3–24 % → 6–13 % dans le monde 12) mais pas supprimé : le déséquilibre est dans la banque de questions elle-même. Installation testée par vérifications automatiques ; test sur un vrai iPhone à faire par l'utilisateur.
 
-**Prochaine étape :** v0.3.0 — PWA (installable iOS et Chrome, hors-ligne). Le rééquilibrage de la banque (backlog 2) reste à planifier : il est la seule vraie solution au biais résiduel.
+**Prochaine étape :** rééquilibrage de la banque de questions (backlog 2), seule vraie solution au biais résiduel, puis résultats enrichis (backlog 3).
+
+**Procédure de release :** modifier `APP_VERSION` (index.html) et `CACHE_VERSION` (sw.js) avec la même valeur, lancer `node tools/smoke.js`, commit, push. Sans changement de version, les téléphones gardent l'ancienne version en cache.
 
 ---
 
 ## Journal des versions et modifications
+
+### v0.3.0 — 2026-11-23 — PWA
+- `manifest.json` : nom, mode `standalone`, portrait, couleurs `#0f172a`, 3 icônes (192, 512, 512 maskable).
+- `sw.js` : service worker. Page : réseau d'abord (mises à jour récupérées en ligne), cache en secours hors-ligne. Icônes et manifeste : cache d'abord. Les anciens caches sont supprimés à l'activation.
+- `icons/` : icône radar à 12 branches (fond `#0f172a`, profil `#d4a373`), générée par `tools/make-icons.ps1` ; variante maskable avec zone de sécurité ; `apple-touch-icon` 180 px pour l'écran d'accueil iOS.
+- `index.html` : liens manifeste, icône Apple, `theme-color`, enregistrement du service worker (uniquement en http/https), version affichée en pied de page avec la mention « outil de réflexion personnelle, pas un diagnostic psychologique » (A4).
+- `tools/smoke.js` vérifie maintenant : champs du manifeste, existence et dimensions réelles des icônes, cohérence `APP_VERSION` = `CACHE_VERSION`, existence de tous les fichiers du cache.
+- Aucun changement de scoring ni de questions.
+
+**Installer :** iPhone → ouvrir l'URL dans **Safari** → Partager → « Sur l'écran d'accueil ». Chrome (ordinateur, Android) → icône « Installer » dans la barre d'adresse.
 
 ### v0.2.0 — 2026-11-23 — Scoring
 - **Indice ajusté** : le score brut de chaque archétype est divisé par son « exposition » (points qu'un répondant au hasard obtiendrait en moyenne sur les questions réellement répondues). Indice 100 = niveau du hasard. Les fonctions `computeExposure`, `adjustScores`, `rankKeys` sont dans `index.html` et testées par `tools/balance.js`.
@@ -56,6 +69,9 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | A6 | 2026-11-23 | Exposition calculée sur les questions **réellement répondues**, pas sur les 10 tirées | Une question expirée ne doit ni donner de points ni compter dans la référence du hasard | Exposition sur la banque entière : ne tient pas compte du tirage de la session |
 | A7 | 2026-11-23 | Chrono expiré = question passée **sans point** | Une réponse aléatoire pollue le profil sans que l'utilisateur le sache | Garder la réponse aléatoire (comportement v0.1.0) |
 | A8 | 2026-11-23 | Départage des égalités par ordre **aléatoire propre à la session** | Un ordre fixe favorisait systématiquement les premiers archétypes déclarés. Rejouer la même session peut donner un ordre différent, mais l'égalité est signalée à l'utilisateur | Ordre fixe alphabétique ou de déclaration : biais permanent |
+| A10 | 2026-11-23 | Service worker : **réseau d'abord** pour la page, cache d'abord pour le reste | Une mise à jour poussée sur GitHub est visible dès l'ouverture suivante en ligne, sans vider le cache ; le hors-ligne reste garanti | Cache d'abord partout : plus rapide mais l'utilisateur garderait l'ancienne version jusqu'à une seconde ouverture |
+| A11 | 2026-11-23 | Icônes générées par script (`tools/make-icons.ps1`, System.Drawing) plutôt que dessinées à la main | Reproductible, modifiable (couleurs, motif), aucune dépendance à installer sous Windows | Éditeur graphique : non versionnable |
+| A12 | 2026-11-23 | Chemins relatifs (`./`) partout dans le manifeste et le service worker | L'app est servie dans un sous-dossier (`/archetypes-lab/`) sur GitHub Pages ; des chemins absolus (`/`) casseraient l'installation | Chemins absolus : fonctionnent en local mais pas sur Pages |
 | A9 | 2026-11-23 | Ne pas rééquilibrer la banque dans la v0.2.0 | Rééquilibrer demande de réécrire des dizaines d'options et de les relire une à une : c'est un chantier de contenu à part (backlog 2) | Tout corriger d'un coup : version trop large, régression difficile à isoler |
 
 ---
@@ -75,6 +91,6 @@ Source : `docs/balance-baseline.txt` (`node tools/balance.js`).
 1. ~~**Scoring (v0.2.0)**~~ : fait.
 2. **Banque** : rééquilibrer les options (plus de choix primaires Innocent, Amoureux, Bouffon, Homme ordinaire, Héra, Perséphone) ; ≥ 15 questions éligibles par mode (Miroir Social du monde 12 : 10 seulement) ; neutraliser le genre du monde 7 ou l'assumer. Objectif chiffré : rapport max/min des poids < 1,3 et part en tête d'un répondant au hasard entre 6 % et 11 % dans le monde 12.
 3. **Résultats** : descriptions détaillées, avertissement « outil de réflexion », nuance du diagnostic Duo (deux tirages de 10 questions différentes ne prouvent pas un « décalage »).
-4. **PWA (v0.3.0)** : manifest, service worker, icônes, test d'installation iOS et Chrome.
+4. ~~**PWA (v0.3.0)**~~ : fait (reste le test sur un vrai iPhone).
 5. **UX** : retour arrière, confirmation d'abandon, historique local, partage/export, labels radar non coupés (« Homme ordinaire », « Hors-la-loi »), retrait de `user-scalable=no`, couleurs du radar selon le thème.
 6. **Tests** : étendre `tools/smoke.js` (rendu réel dans un navigateur, test iOS Safari).
