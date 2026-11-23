@@ -878,7 +878,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.13.1';
+const APP_VERSION = 'v0.13.2';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -2455,7 +2455,17 @@ updateNav();
 document.getElementById('appVersion').textContent = APP_VERSION;
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker non enregistré :', err));
+    // updateViaCache:'none' + update() : vérifie une nouvelle version à chaque ouverture, sans passer par le cache HTTP.
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      // Nouvelle version prête : on recharge une fois, sauf en pleine session de questions.
+      const inQuiz = !document.getElementById('viewQuiz').classList.contains('hidden');
+      if (hadController && !reloaded && !inQuiz) { reloaded = true; location.reload(); }
+    });
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .then(reg => reg.update())
+      .catch(err => console.warn('Service worker non enregistré :', err));
   });
 }
 </script>

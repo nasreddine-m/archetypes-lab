@@ -1,7 +1,7 @@
 // Service worker : met l'application en cache pour le hors-ligne.
 // IMPORTANT : CACHE_VERSION doit être identique à APP_VERSION dans index.html
 // (vérifié par tools/smoke.js). Changer cette valeur à chaque release force la mise à jour.
-const CACHE_VERSION = 'v0.13.1';
+const CACHE_VERSION = 'v0.13.2';
 const CACHE_NAME = `archetypes-lab-${CACHE_VERSION}`;
 const SHELL = [
   './',
@@ -35,7 +35,7 @@ self.addEventListener('fetch', event => {
 
   if (req.mode === 'navigate') {
     event.respondWith(
-      fetch(req)
+      fetch(req, { cache: 'no-store' })   // jamais le cache HTTP : GitHub Pages en garde 10 min
         .then(res => {
           const copy = res.clone();
           caches.open(CACHE_NAME).then(c => c.put('./index.html', copy));
