@@ -7,38 +7,38 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Archétypes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#1c2846">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>Archétypes — Déclaratif & Observation</title>
 <style>
   :root {
-    --bg: #0f172a;
-    --card: #1e293b;
-    --card-soft: #263349;
-    --accent: #d4a373;
-    --accent-soft: rgba(212, 163, 115, 0.16);
-    --accent-ink: #111827;
-    --accent-2: #60a5fa;
-    --text: #f8fafc;
-    --muted: #94a3b8;
-    --border: rgba(255, 255, 255, 0.1);
+    --bg: #1c2846;
+    --card: #27365e;
+    --card-soft: #33447a;
+    --accent: #ebcfa9;
+    --accent-soft: rgba(235, 207, 169, 0.16);
+    --accent-ink: #1c2846;
+    --accent-2: #8fb8f5;
+    --text: #f6f8fd;
+    --muted: #b4c0d6;
+    --border: rgba(255, 255, 255, 0.13);
     --success: #34d399;
     --danger: #f87171;
     --ease: cubic-bezier(0.16, 1, 0.3, 1);
     color-scheme: dark;
   }
   body.theme-women {
-    --bg: #230f1e;
-    --card: #36182f;
-    --card-soft: #47203e;
-    --accent: #e6b88a;
-    --accent-soft: rgba(230, 184, 138, 0.18);
-    --accent-2: #f472b6;
+    --bg: #3b2543;
+    --card: #4b3156;
+    --card-soft: #5b3d68;
+    --accent: #f3d2b3;
+    --accent-soft: rgba(243, 210, 179, 0.18);
+    --accent-2: #f7a8d0;
     --text: #fdf8fb;
-    --muted: #cbb2c4;
-    --border: rgba(255, 255, 255, 0.12);
+    --muted: #e0cbe0;
+    --border: rgba(255, 255, 255, 0.14);
   }
   * {
     box-sizing: border-box;
@@ -448,12 +448,32 @@
   .history-sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .history-row .btn-quiet { margin: 0; flex: none; }
   #historyClearBtn { margin: 0 0 8px; padding-left: 0; }
+  .synth-stamp { float: right; width: 108px; height: 108px; margin: 2px 0 8px 14px; color: var(--accent); opacity: 0.92; transform: rotate(-8deg); shape-outside: circle(50%); }
+  .stamp { display: block; width: 100%; height: 100%; }
+  .types-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .type-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; background: var(--card-soft); border: 1.5px solid var(--border); border-radius: 16px; padding: 14px 8px; color: var(--text); cursor: pointer; transition: border-color 0.2s var(--ease), transform 0.15s var(--ease); }
+  .type-btn:hover { border-color: var(--accent); }
+  .type-btn:active { transform: scale(0.98); }
+  .type-stamp { display: block; width: 64px; height: 64px; color: var(--accent); transform: rotate(-8deg); }
+  .type-name { font-size: 15px; font-weight: 700; text-align: center; text-wrap: balance; }
+  .type-sub { font-size: 13px; color: var(--muted); }
+  .rank-item[role="button"] { cursor: pointer; border-radius: 10px; }
+  .rank-item[role="button"]:hover { background: var(--accent-soft); }
+  .fiche-head { text-align: center; }
+  .fiche-stamp { width: 150px; height: 150px; margin: 4px auto 14px; color: var(--accent); transform: rotate(-8deg); }
+  .fiche-name { font-size: 26px; font-weight: 800; letter-spacing: -0.4px; margin: 0 0 6px; }
+  .fiche-motor { font-size: 16px; color: var(--muted); margin: 0; line-height: 1.5; }
+  .fiche-h { font-size: 15px; font-weight: 700; color: var(--accent); margin: 18px 0 4px; }
+  .fiche-h:first-child { margin-top: 0; }
+  .fiche-p { font-size: 16px; line-height: 1.55; margin: 0; max-width: 65ch; }
+  .fiche-note { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 8px 0 0; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><filter id="stampRough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter></defs></svg>
 <div class="container">
   <header>
     <div class="brand">Archétypes <span>Lab</span></div>
@@ -593,6 +613,15 @@
       <div id="synthText"></div>
     </div>
 
+    <div class="card" id="typesCard">
+      <h2 class="card-title">Tes deux profils types</h2>
+      <div class="types-row">
+        <button class="type-btn" id="typeBtn1" onclick="openFiche(0)"></button>
+        <button class="type-btn" id="typeBtn2" onclick="openFiche(1)"></button>
+      </div>
+      <div class="legend" style="margin:12px 0 0">Touche un profil pour lire sa fiche. Tu peux aussi toucher une ligne du classement.</div>
+    </div>
+
     <div class="card">
       <h2 class="card-title">Classement</h2>
       <div class="legend" id="rankLegend"></div>
@@ -601,9 +630,21 @@
 
     <button class="btn-primary" id="shareBtn" onclick="shareResult()">Partager mon profil</button>
     <button class="btn-secondary" id="copyBtn" onclick="copySummary()">Copier le résumé</button>
+    <button class="btn-secondary" id="mailBtn" onclick="emailResult()">Envoyer par e-mail</button>
     <div class="share-note" id="shareNote" role="status"></div>
     <button class="btn-secondary" id="duoBtn" onclick="prepareDuoCompare()">Comparer en Duo : se voir et être vu</button>
     <button class="btn-secondary" id="backBtn" onclick="goHome()">Nouvelle session</button>
+  </div>
+
+  <!-- FICHE D'UN PROFIL TYPE -->
+  <div id="viewFiche" class="hidden">
+    <div class="card fiche-head">
+      <div class="fiche-stamp" id="ficheStamp"></div>
+      <h2 class="fiche-name" id="ficheName"></h2>
+      <p class="fiche-motor" id="ficheMotor"></p>
+    </div>
+    <div class="card" id="ficheBody"></div>
+    <button class="btn-primary" onclick="closeFiche()">Retour au résultat</button>
   </div>
 
   <div class="app-footer">Archétypes Lab <span id="appVersion"></span><br>Outil de réflexion personnelle, pas un diagnostic psychologique.</div>
@@ -611,7 +652,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.10.0';
+const APP_VERSION = 'v0.11.0';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -926,6 +967,64 @@ function profileStrength(universe, answeredCount, topIdx) {
   return topIdx < t.p75 ? 'flat' : topIdx < t.p95 ? 'moderate' : 'clear';
 }
 
+// --- Figures associées, tampons et fiches (v0.11.0) -------------------------------------------------
+// Repères culturels cités par des sites de vulgarisation (pas par la recherche) : voir docs/figures-sources.md.
+// Personne n'a passé ce test : ce ne sont PAS des profils réels. Aucune figure sourcée pour Bouffon ni pour les 7 Princesses.
+const FIGURES = {
+  "Sage": ["Albert Einstein", "Yoda (fiction)"],
+  "Magicien": ["Steve Jobs", "Gandalf (fiction)"],
+  "Hors-la-loi": ["Robin des Bois (légende)", "Jeanne d'Arc"],
+  "Explorateur": ["Amelia Earhart"],
+  "Créateur": ["Léonard de Vinci"],
+  "Souverain": ["Élisabeth Iʳᵉ d'Angleterre", "le roi Arthur (légende)"],
+  "Héros": ["Luke Skywalker (fiction)", "Jeanne d'Arc"],
+  "Protecteur": ["Mère Teresa", "Samwise Gamgee (fiction)"],
+  "Amoureux": ["Roméo et Juliette (fiction)", "John Keats"],
+  "Homme ordinaire": ["Jim Halpert, dans The Office (fiction)"],
+  "Innocent": ["Forrest Gump (fiction)"]
+};
+const aName = n => /^Le /.test(n) ? 'au ' + n.slice(3) : /^L'/.test(n) ? "à l'" + n.slice(2) : 'à ' + n;
+
+// Emblèmes au trait (grille 48 x 48), un par archétype, dessinés pour le tampon.
+const STAMP_ICONS = {
+  "Magicien": '<path d="M10 38 L28 20"/><path d="M33 7 l2.4 5.4 5.4 2.4 -5.4 2.4 -2.4 5.4 -2.4 -5.4 -5.4 -2.4 5.4 -2.4z"/><path d="M12 14 l1 2.2 2.2 1 -2.2 1 -1 2.2 -1 -2.2 -2.2 -1 2.2 -1z"/>',
+  "Sage": '<path d="M24 14 C18 10 10 10 6 12 V36 C10 34 18 34 24 38 C30 34 38 34 42 36 V12 C38 10 30 10 24 14 Z"/><path d="M24 14 V38"/>',
+  "Hors-la-loi": '<path d="M27 5 L12 26 H22 L20 43 L36 21 H26 Z"/>',
+  "Explorateur": '<circle cx="24" cy="24" r="16"/><path d="M31 17 L26.5 26.5 L17 31 L21.5 21.5 Z"/>',
+  "Créateur": '<path d="M9 39 L11 30 L32 9 L39 16 L18 37 Z"/><path d="M28 13 L35 20"/>',
+  "Souverain": '<path d="M8 34 L8 16 L18 26 L24 12 L30 26 L40 16 L40 34 Z"/><path d="M8 40 H40"/>',
+  "Héros": '<path d="M5 40 L20 16 L28 28 L33 20 L43 40 Z"/><path d="M20 16 V5 L29 8.5 L20 12"/>',
+  "Protecteur": '<path d="M24 6 L38 11 V24 C38 32 32 38 24 42 C16 38 10 32 10 24 V11 Z"/><path d="M18 24 L22 28 L30 19"/>',
+  "Amoureux": '<path d="M24 40 C8 28 8 14 17 12 C21 11 24 14 24 17 C24 14 27 11 31 12 C40 14 40 28 24 40 Z"/>',
+  "Bouffon": '<circle cx="24" cy="24" r="16"/><circle cx="18" cy="20" r="1.6"/><circle cx="30" cy="20" r="1.6"/><path d="M16 28 C20 34 28 34 32 28"/>',
+  "Homme ordinaire": '<path d="M7 24 L24 9 L41 24"/><path d="M12 21 V39 H36 V21"/><path d="M21 39 V29 H27 V39"/>',
+  "Innocent": '<path d="M24 41 V22"/><path d="M24 25 C24 15 14 12 10 14 C10 22 16 26 24 25 Z"/><path d="M24 21 C24 13 32 9 38 11 C38 19 32 23 24 21 Z"/>',
+  "Athéna": '<path d="M11 11 L18 18 H30 L37 11 V30 C37 38 31 42 24 42 C17 42 11 38 11 30 Z"/><circle cx="19" cy="26" r="4"/><circle cx="29" cy="26" r="4"/><path d="M22 32 L24 35 L26 32"/>',
+  "Artémis": '<path d="M14 7 C30 12 33 36 14 41 Z"/><path d="M8 24 H41"/><path d="M35 18 L41 24 L35 30"/>',
+  "Hestia": '<path d="M24 5 C28 14 37 18 35 29 C34 37 29 43 24 43 C19 43 13 37 14 29 C15 25 18 23 19 18 C23 20 23 13 24 5 Z"/><path d="M24 42 C20 38 20 32 24 28 C28 32 28 38 24 42 Z"/>',
+  "Héra": '<circle cx="18" cy="28" r="10"/><circle cx="30" cy="28" r="10"/><path d="M24 6 L28 11 L24 16 L20 11 Z"/>',
+  "Déméter": '<path d="M24 43 V13"/><path d="M24 13 C20 11 18 7 18 5 C22 7 24 9 24 13"/><path d="M24 13 C28 11 30 7 30 5 C26 7 24 9 24 13"/><path d="M24 22 C19 21 16 18 15 15 C20 16 23 18 24 22"/><path d="M24 22 C29 21 32 18 33 15 C28 16 25 18 24 22"/><path d="M24 31 C19 30 16 27 15 24 C20 25 23 27 24 31"/><path d="M24 31 C29 30 32 27 33 24 C28 25 25 27 24 31"/>',
+  "Perséphone": '<circle cx="24" cy="24" r="4"/><circle cx="24" cy="12" r="6"/><circle cx="24" cy="36" r="6"/><circle cx="12" cy="24" r="6"/><circle cx="36" cy="24" r="6"/>',
+  "Aphrodite": '<path d="M24 41 L9 17 C16 8 32 8 39 17 Z"/><path d="M24 41 L17 12"/><path d="M24 41 V10"/><path d="M24 41 L31 12"/><path d="M14 43 H34"/>'
+};
+
+let stampSeq = 0;
+// Tampon circulaire : nom de l'archétype en haut, « Archétypes Lab » en bas, emblème au centre.
+function stampSvg(key, name, size) {
+  const id = 'st' + (++stampSeq);
+  const label = name.toUpperCase();
+  const fs = label.length > 12 ? 8.4 : 10.4;
+  const icon = STAMP_ICONS[key] || '';
+  return `<svg class="stamp" viewBox="0 0 120 120" width="${size}" height="${size}" role="img" aria-label="Tampon : ${name}" focusable="false">` +
+    `<defs><path id="${id}a" d="M 16,60 A 44,44 0 0 1 104,60"/><path id="${id}b" d="M 8,60 A 52,52 0 0 0 112,60"/></defs>` +
+    `<g fill="none" stroke="currentColor" filter="url(#stampRough)">` +
+    `<circle cx="60" cy="60" r="57" stroke-width="2.4"/><circle cx="60" cy="60" r="38" stroke-width="1.3"/>` +
+    `<g transform="translate(60 60) scale(1.14) translate(-24 -24)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${icon}</g>` +
+    `<text fill="currentColor" stroke="none" font-size="${fs}" font-weight="700" letter-spacing="1.4" text-anchor="middle" font-family="-apple-system, 'Segoe UI', Roboto, sans-serif"><textPath href="#${id}a" xlink:href="#${id}a" startOffset="50%">${label}</textPath></text>` +
+    `<text fill="currentColor" stroke="none" font-size="7.6" font-weight="700" letter-spacing="1.6" text-anchor="middle" font-family="-apple-system, 'Segoe UI', Roboto, sans-serif"><textPath href="#${id}b" xlink:href="#${id}b" startOffset="50%">ARCHÉTYPES LAB</textPath></text>` +
+    `</g></svg>`;
+}
+
 // Portrait en 3 paragraphes à partir du classement. `order` : clés triées, `adj` : indices ajustés,
 // `strength` : 'flat' | 'moderate' | 'clear' (voir profileStrength).
 function buildSynthesis(meta, order, adj, answeredCount, strength = 'clear') {
@@ -950,7 +1049,8 @@ function buildSynthesis(meta, order, adj, answeredCount, strength = 'clear') {
     }
   }
   const p2 = `Dans les relations, ${s1.relation}. Zone d'ombre possible : ${lc(meta[k1].shadow.replace(/\.$/, ''))}. ` +
-    `Piste pour progresser : ${s1.piste}.`;
+    `Piste pour progresser : ${s1.piste}.` +
+    (FIGURES[k1] ? ` Figures souvent associées ${aName(n1)} (repères culturels) : ${FIGURES[k1].join(', ')}.` : '');
   const low = order.slice(-2).map(k => inSentence(meta[k].full));
   const p3 = `Les archétypes les moins mobilisés dans cette session sont ${low[0]} et ${low[1]} : cela ne dit rien de tes capacités, ` +
     `seulement de ce que tu as choisi parmi ces ${answeredCount} questions. Ce portrait est un point de départ pour la réflexion, pas un diagnostic.`;
@@ -1309,6 +1409,13 @@ function renderResults(r) {
     const val = adj[key];
     const row = document.createElement('div');
     row.className = 'rank-item' + (i < 2 ? ' hi' : '');
+    row.tabIndex = 0;
+    if (row.setAttribute) {
+      row.setAttribute('role', 'button');
+      row.setAttribute('aria-label', `Voir la fiche : ${meta[key].full}`);
+    }
+    row.onclick = () => openFicheKey(key, r.universe);
+    row.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openFicheKey(key, r.universe); } };
     const width = Math.round((val / scale) * 100);
     const tick = Math.round((rt.p50 / scale) * 100);
     row.innerHTML = `
@@ -1327,6 +1434,15 @@ function renderResults(r) {
 
   const synthEl = document.getElementById('synthText');
   synthEl.innerHTML = '';
+  const stampHost = document.createElement('div');
+  stampHost.className = 'synth-stamp';
+  stampHost.innerHTML = stampSvg(top1, meta[top1].full, 108);
+  synthEl.appendChild(stampHost);
+  [0, 1].forEach(i => {
+    const k = order[i];
+    document.getElementById('typeBtn' + (i + 1)).innerHTML =
+      `<span class="type-stamp">${stampSvg(k, meta[k].full, 64)}</span><span class="type-name">${meta[k].full}</span><span class="type-sub">Voir la fiche</span>`;
+  });
   buildSynthesis(meta, order, adj, r.answeredCount, strength).forEach((txt, i) => {
     const p = document.createElement('p');
     p.textContent = txt;
@@ -1580,6 +1696,86 @@ async function copySummary() {
   }
 }
 
+// --- Fiche d'un profil type -----------------------------------------------------------------------
+function openFicheKey(key, universe) {
+  const uni = universe || state.universe;
+  const meta = uni === '12' ? META_12 : META_7;
+  if (!meta[key]) return;
+  const s = SYNTH[key];
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  document.getElementById('ficheStamp').innerHTML = stampSvg(key, meta[key].full, 150);
+  document.getElementById('ficheName').textContent = meta[key].full;
+  document.getElementById('ficheMotor').textContent = meta[key].motor;
+  const sections = [
+    ['Ce que cet archétype te donne', cap(s.nuance) + '.'],
+    ['Dans tes relations', cap(s.relation) + '.'],
+    ['Zone d\'ombre', meta[key].shadow],
+    ['Piste pour progresser', cap(s.piste) + '.']
+  ];
+  const body = document.getElementById('ficheBody');
+  body.innerHTML = '';
+  sections.forEach(([title, txt]) => {
+    const h = document.createElement('h3');
+    h.className = 'fiche-h';
+    h.textContent = title;
+    const p = document.createElement('p');
+    p.className = 'fiche-p';
+    p.textContent = txt;
+    body.appendChild(h);
+    body.appendChild(p);
+  });
+  if (FIGURES[key]) {
+    const h = document.createElement('h3');
+    h.className = 'fiche-h';
+    h.textContent = 'Figures souvent associées';
+    const p = document.createElement('p');
+    p.className = 'fiche-p';
+    p.textContent = FIGURES[key].join(', ') + '.';
+    const note = document.createElement('p');
+    note.className = 'fiche-note';
+    note.textContent = 'Repères culturels cités par des sites de vulgarisation, pas par la recherche. Personne n\'a passé ce test : ce ne sont pas des profils réels.';
+    body.appendChild(h);
+    body.appendChild(p);
+    body.appendChild(note);
+  }
+  document.getElementById('viewResult').classList.add('hidden');
+  document.getElementById('viewFiche').classList.remove('hidden');
+  window.scrollTo && window.scrollTo(0, 0);
+}
+function openFiche(index) {
+  const r = state.lastResult;
+  if (r) openFicheKey(r.order[index], r.universe);
+}
+function closeFiche() {
+  document.getElementById('viewFiche').classList.add('hidden');
+  document.getElementById('viewResult').classList.remove('hidden');
+  window.scrollTo && window.scrollTo(0, 0);
+}
+
+// --- Envoi par e-mail : le texte du profil est prérempli dans l'application e-mail de l'appareil ----
+// Rien ne transite par un serveur d'Archétypes Lab : c'est l'utilisateur qui choisit le destinataire et envoie.
+function buildEmailUrl(r) {
+  const meta = r.universe === '12' ? META_12 : META_7;
+  const a = r.order[0], b = r.order[1];
+  const strength = profileStrength(r.universe, r.answeredCount, r.adj[a]);
+  const synth = buildSynthesis(meta, r.order, r.adj, r.answeredCount, strength);
+  const top = r.order.slice(0, 3).map((k, i) => `${i + 1}. ${meta[k].full} (indice ${r.adj[k]})`).join('\n');
+  const head = `${r.subject} : ${meta[a].full} — ${meta[b].full}\n\n${top}\n\n`;
+  const foot = `\n\nArchétypes Lab, un outil de réflexion (pas un diagnostic) : ${APP_URL}`;
+  const subject = `Mon profil Archétypes Lab : ${meta[a].full} — ${meta[b].full}`;
+  const mk = body => `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  let url = mk(head + synth[0] + '\n\n' + synth[1] + foot);
+  if (url.length > 1900) url = mk(head + synth[0] + foot);       // certains clients limitent les liens mailto
+  if (url.length > 1900) url = mk(head.trimEnd() + foot);
+  return url;
+}
+function emailResult() {
+  const r = state.lastResult;
+  if (!r) return;
+  document.getElementById('shareNote').textContent = 'Ton application e-mail s\'ouvre avec le texte prérempli : choisis le destinataire.';
+  location.href = buildEmailUrl(r);
+}
+
 function drawRadar(keys, scoresA, scoresB, targetCanvas, targetSize) {
   const canvas = targetCanvas || document.getElementById('radarCanvas');
   const ctx = canvas.getContext('2d');
@@ -1702,6 +1898,7 @@ function clearDuo() {
 }
 
 function goHome() {
+  document.getElementById('viewFiche').classList.add('hidden');
   document.getElementById('viewQuiz').classList.add('hidden');
   document.getElementById('viewResult').classList.add('hidden');
   document.getElementById('viewHome').classList.remove('hidden');

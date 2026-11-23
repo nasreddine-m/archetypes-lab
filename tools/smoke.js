@@ -33,7 +33,7 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
@@ -106,7 +106,7 @@ ctx.setLen(30); ok(ctx.S.length === 10, 'duo : longueur verrouillée (setLen ign
 
 // 4b. Synthèse du profil
 const bare = n => n.replace(/^(Le |L')/, ''); // le texte écrit « du Sage », « de l'Innocent »
-ok(els.synthText.children.length === 3, 'synthèse affichée : 3 paragraphes dans la page');
+ok(els.synthText.children.length === 4, 'synthèse affichée : tampon + 3 paragraphes dans la page');
 for (const [w, meta] of [['12', ctx.M12], ['7', ctx.M7]]) {
   const keys = Object.keys(meta);
   keys.forEach(k => ok(ctx.SYN[k] && ['trait', 'nuance', 'relation', 'piste'].every(f => ctx.SYN[k][f] && ctx.SYN[k][f].length > 15), `SYNTH complet : ${k}`));
@@ -180,6 +180,32 @@ const rr = ctx.S.lastResult, st = ctx.shareText(rr);
 ok(st.includes(rr.subject) && st.includes('https://nasreddine-m.github.io/archetypes-lab/') && /pas un diagnostic/.test(st) && /Moteur :/.test(st), 'partage : texte avec sujet, moteur, ombre, lien et mention');
 const cv = ctx.card(rr);
 ok(cv.width === 1080 && cv.height === 1350, 'partage : carte 1080 x 1350 dessinée sans erreur');
+
+// 4g. Tampon, figures associées, fiches de profil type, e-mail
+const allKeys = [...Object.keys(ctx.M12), ...Object.keys(ctx.M7)];
+const fullName = k => (ctx.M12[k] || ctx.M7[k]).full;
+ok(allKeys.length === 19 && allKeys.every(k => ctx.icons[k] && ctx.icons[k].length > 40), 'tampon : un emblème dessiné pour chacun des 19 archétypes');
+const svgs = allKeys.map(k => ctx.stamp(k, fullName(k), 100));
+const stampIds = svgs.flatMap(sv => [...sv.matchAll(/id="(st\d+[ab])"/g)].map(m => m[1]));
+ok(svgs.every((sv, i) => sv.includes('<svg') && sv.includes('</svg>') && sv.includes(fullName(allKeys[i]).toUpperCase())) && new Set(stampIds).size === stampIds.length, 'tampon : 19 SVG complets, nom en majuscules, identifiants de tracé uniques');
+ok(Object.keys(ctx.figs).every(k => ctx.M12[k]) && !ctx.figs['Bouffon'] && !Object.keys(ctx.M7).some(k => ctx.figs[k]), 'figures : seulement des archétypes du monde 12, aucune pour Bouffon ni pour les Princesses');
+const adjS = Object.fromEntries(k12.map(k => [k, 80])); adjS.Sage = 300; adjS.Magicien = 250;
+const txtSage = ctx.synth(ctx.M12, ['Sage', 'Magicien', ...k12.filter(k => k !== 'Sage' && k !== 'Magicien')], adjS, 20).join(' ');
+ok(txtSage.includes('associées au Sage (repères culturels) : Albert Einstein'), 'synthèse : figures associées au n° 1, avec la mention « repères culturels »');
+const txtBouf = ctx.synth(ctx.M12, ['Bouffon', 'Sage', ...k12.filter(k => k !== 'Sage' && k !== 'Bouffon')], adjS, 20).join(' ');
+ok(!/Figures souvent associées/.test(txtBouf), 'synthèse : aucune figure inventée pour un archétype sans source (Bouffon)');
+ctx.setU('12'); ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
+const top1k = ctx.S.lastResult.order[0];
+ctx.openFK(top1k, '12');
+ok(!els.viewFiche.classList.contains('hidden') && els.viewResult.classList.contains('hidden') && els.ficheName.textContent === fullName(top1k) && els.ficheStamp.innerHTML.includes('<svg'), 'fiche : ouverture du profil type avec son tampon');
+ok(els.ficheBody.children.length >= 8, 'fiche : 4 sections (titre + texte) au minimum');
+ctx.closeF();
+ok(els.viewFiche.classList.contains('hidden') && !els.viewResult.classList.contains('hidden'), 'fiche : retour au résultat');
+ctx.openFK('Athéna', '7');
+ok(els.ficheName.textContent === 'Athéna' && !/Figures souvent associées/.test(els.ficheBody.children.map(c => c.textContent).join(' ')), 'fiche Princesses : ouverture sans figure associée');
+ctx.closeF();
+const mail = ctx.mailUrl(ctx.S.lastResult);
+ok(mail.startsWith('mailto:?subject=') && mail.length < 1950 && decodeURIComponent(mail).includes('pas un diagnostic') && decodeURIComponent(mail).includes('nasreddine-m.github.io/archetypes-lab'), 'e-mail : lien mailto avec sujet, texte, mention et lien, moins de 1950 caractères');
 
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
