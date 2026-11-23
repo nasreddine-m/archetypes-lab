@@ -18,7 +18,8 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 
 ### v0.1.0 — 2026-11-23 — Base
 - Import de `index.html` d'origine (copie intacte conservée dans `docs/index.v0.original.html`).
-- Création du dépôt de travail `Archetypes-Lab` et du dépôt GitHub associé.
+- Création du dépôt de travail `Archetypes-Lab` et du dépôt GitHub public `nasreddine-m/archetypes-lab`.
+- Publication via GitHub Pages : https://nasreddine-m.github.io/archetypes-lab/ (branche `main`, racine).
 - Ajout de `tools/balance.js` : mesure de l'équilibre des archétypes dans les banques de questions + simulation de 20 000 répondants aléatoires. Résultat de référence : `docs/balance-baseline.txt`.
 - Aucune modification fonctionnelle de l'application.
 
