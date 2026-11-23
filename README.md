@@ -9,6 +9,7 @@ Outil de réflexion personnelle, pas un diagnostic psychologique.
 - Mesurer l'équilibre des questions : `node tools/balance.js`
 - Contrôler le style des questions : `node tools/style-check.js` (charte : `docs/STYLE.md`)
 - Fiabilité selon le nombre de questions : `node tools/session-length.js`
+- Seuils « peu contrasté » (repère du hasard) : `node tools/calibrate-threshold.js`
 - Test de bout en bout (100 contrôles) : `node tools/smoke.js`
 - Régénérer les icônes : `powershell -ExecutionPolicy Bypass -File tools/make-icons.ps1`
 - Installer : iPhone → Safari → Partager → « Sur l'écran d'accueil » ; Chrome → icône « Installer » dans la barre d'adresse

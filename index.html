@@ -421,7 +421,8 @@
   .rank-main { flex: 1; min-width: 0; }
   .rank-name { font-size: 16px; font-weight: 700; }
   .rank-desc { font-size: 13px; color: var(--muted); line-height: 1.35; }
-  .rank-bar { height: 6px; border-radius: 99px; background: var(--card-soft); margin-top: 8px; overflow: hidden; }
+  .rank-bar { position: relative; height: 6px; border-radius: 99px; background: var(--card-soft); margin-top: 8px; }
+  .rank-bar b { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--text); opacity: 0.5; }
   .rank-bar i { display: block; height: 100%; border-radius: 99px; background: var(--muted); opacity: 0.7; transition: width 0.6s var(--ease); }
   .rank-item.hi .rank-bar i { background: var(--accent); opacity: 1; }
   .rank-score { flex: none; min-width: 36px; text-align: right; font-size: 16px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -440,6 +441,13 @@
   .synth-p:last-child { margin-bottom: 0; }
   .synth-note { font-size: 13px; color: var(--muted); line-height: 1.5; }
   .app-footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 22px; line-height: 1.6; }
+  .share-note { min-height: 20px; font-size: 13px; color: var(--muted); text-align: center; margin: 8px 0 4px; }
+  .history-row { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); }
+  .history-open { flex: 1; min-width: 0; text-align: left; background: none; border: 0; color: var(--text); padding: 12px 0; cursor: pointer; border-radius: 8px; }
+  .history-title { font-size: 15px; font-weight: 700; }
+  .history-sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-row .btn-quiet { margin: 0; flex: none; }
+  #historyClearBtn { margin: 0 0 8px; padding-left: 0; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
   }
@@ -526,6 +534,14 @@
       </div>
     </div>
 
+    <div class="card settings hidden" id="historyCard">
+      <details class="disclosure">
+        <summary><span class="row-label">Historique</span><span class="row-value num" id="historyCount"></span></summary>
+        <div id="historyList"></div>
+        <button class="btn-quiet" id="historyClearBtn" onclick="clearHistory()">Tout effacer</button>
+      </details>
+    </div>
+
     <div id="notice" class="duo-banner hidden" role="status"></div>
     <div id="duoSavedBox" class="duo-banner hidden"></div>
 
@@ -562,6 +578,11 @@
 
     <div id="duoDiagnostic" class="duo-banner hidden"></div>
 
+    <div id="refineCard" class="duo-banner hidden">
+      <p id="refineText" style="margin:0 0 12px"></p>
+      <button class="btn-secondary" id="refineBtn" onclick="refineSession()" style="margin-top:0">Affiner</button>
+    </div>
+
     <div class="card">
       <h2 class="card-title">Ta signature</h2>
       <canvas id="radarCanvas" width="360" height="360" role="img" aria-label="Radar de ton profil"></canvas>
@@ -574,12 +595,15 @@
 
     <div class="card">
       <h2 class="card-title">Classement</h2>
-      <div class="legend">Indice ajusté : 100 correspond au hasard, plus haut montre une vraie affinité.</div>
+      <div class="legend" id="rankLegend"></div>
       <div id="rankingList"></div>
     </div>
 
-    <button class="btn-primary" onclick="prepareDuoCompare()">Comparer en Duo : se voir et être vu</button>
-    <button class="btn-secondary" onclick="goHome()">Nouvelle session</button>
+    <button class="btn-primary" id="shareBtn" onclick="shareResult()">Partager mon profil</button>
+    <button class="btn-secondary" id="copyBtn" onclick="copySummary()">Copier le résumé</button>
+    <div class="share-note" id="shareNote" role="status"></div>
+    <button class="btn-secondary" id="duoBtn" onclick="prepareDuoCompare()">Comparer en Duo : se voir et être vu</button>
+    <button class="btn-secondary" id="backBtn" onclick="goHome()">Nouvelle session</button>
   </div>
 
   <div class="app-footer">Archétypes Lab <span id="appVersion"></span><br>Outil de réflexion personnelle, pas un diagnostic psychologique.</div>
@@ -587,7 +611,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.9.0';
+const APP_VERSION = 'v0.10.0';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -885,22 +909,45 @@ const deName = n => /^Le /.test(n) ? "du " + n.slice(3) : /^L'/.test(n) ? "de l'
   /^[AEIOUÉÈHaeiouéèh]/.test(n) ? "d'" + n : "de " + n;
 const inSentence = n => /^(Le |L')/.test(n) ? n.charAt(0).toLowerCase() + n.slice(1) : n;
 
-// Portrait en 3 paragraphes à partir du classement. `order` : clés triées, `adj` : indices ajustés.
-function buildSynthesis(meta, order, adj, answeredCount) {
+// Repères du hasard (tools/calibrate-threshold.js, docs/threshold-calibration.txt) : indice du n° 1 obtenu en répondant AU HASARD,
+// par univers et longueur (médiane, 75e et 95e centiles). Même au hasard, le n° 1 dépasse 100 : c'est le repère à dépasser.
+const RANDOM_TOP = {
+  "12": { 10: { p50: 229, p75: 267, p95: 333 }, 20: { p50: 186, p75: 209, p95: 246 }, 30: { p50: 168, p75: 186, p95: 217 } },
+  "7":  { 10: { p50: 174, p75: 200, p95: 240 }, 20: { p50: 150, p75: 167, p95: 194 }, 30: { p50: 141, p75: 153, p95: 176 } }
+};
+function randomTopFor(universe, answeredCount) {
+  const lens = [10, 20, 30];
+  const near = lens.reduce((a, b) => Math.abs(b - answeredCount) < Math.abs(a - answeredCount) ? b : a);
+  return RANDOM_TOP[universe][near];
+}
+// flat : le n° 1 reste dans ce que 75 % des réponses au hasard produisent ; moderate : entre ce seuil et le 95e centile ; clear : au-dessus.
+function profileStrength(universe, answeredCount, topIdx) {
+  const t = randomTopFor(universe, answeredCount);
+  return topIdx < t.p75 ? 'flat' : topIdx < t.p95 ? 'moderate' : 'clear';
+}
+
+// Portrait en 3 paragraphes à partir du classement. `order` : clés triées, `adj` : indices ajustés,
+// `strength` : 'flat' | 'moderate' | 'clear' (voir profileStrength).
+function buildSynthesis(meta, order, adj, answeredCount, strength = 'clear') {
   const k1 = order[0], k2 = order[1];
   const s1 = SYNTH[k1], s2 = SYNTH[k2];
   const lc = t => t.charAt(0).toLowerCase() + t.slice(1);
   const n1 = meta[k1].full, n2 = meta[k2].full;
-  const flat = adj[k1] < 130;      // aucun archétype ne ressort nettement par rapport au hasard
+  const flat = strength === 'flat';
   const tie = adj[k1] === adj[k2];
 
   let p1;
   if (flat) {
-    p1 = `Tes réponses dessinent un profil peu contrasté : aucun archétype ne se détache nettement du hasard (indice 100). ` +
+    p1 = `Tes réponses dessinent un profil peu contrasté : le n° 1 reste dans ce que des réponses au hasard produisent souvent. ` +
       `Si une dominante apparaît, c'est ${inSentence(n1)}, suivi ${deName(n2)}. Ton moteur serait alors de ${s1.trait}.`;
   } else {
     p1 = `Ton profil s'organise autour ${deName(n1)} et ${deName(n2)}${tie ? " (à égalité, l'ordre est indicatif)" : ''}. ` +
       `Ton moteur dominant : ${s1.trait}. ${n2} y ajoute ${s2.nuance}.`;
+    if (strength === 'moderate') {
+      p1 += answeredCount < 30
+        ? ' Le signal reste modéré : davantage de questions le confirmeraient.'
+        : ' Le signal reste modéré.';
+    }
   }
   const p2 = `Dans les relations, ${s1.relation}. Zone d'ombre possible : ${lc(meta[k1].shadow.replace(/\.$/, ''))}. ` +
     `Piste pour progresser : ${s1.piste}.`;
@@ -1079,6 +1126,7 @@ function startQuiz() {
   state.tieRank = {};
   shuffleArray(Object.keys(meta)).forEach((k, i) => state.tieRank[k] = i);
   state.idx = 0;
+  state.historyId = Date.now();
   document.getElementById('notice').classList.add('hidden');
 
   document.getElementById('viewHome').classList.add('hidden');
@@ -1179,23 +1227,49 @@ function abortQuiz() {
   goHome();
 }
 
-function showResults() {
-  document.getElementById('viewQuiz').classList.add('hidden');
-  document.getElementById('viewResult').classList.remove('hidden');
+// --- Résultats : un seul rendu, pour la session en cours comme pour l'historique ------------------
+const MODE_LABELS = {
+  decl: 'Déclaratif pur', obs: 'Observation pure', mix: 'Mixte équilibré',
+  dilemme: 'Dilemmes & pression', miroir: 'Miroir social', random: 'Tirage intégral'
+};
+const APP_URL = 'https://nasreddine-m.github.io/archetypes-lab/';
 
+function dateLabel(ts) {
+  try { return new Date(ts).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); } catch (e) { return ''; }
+}
+
+function showResults() {
   const meta = state.universe === '12' ? META_12 : META_7;
   const keys = Object.keys(meta);
   const adj = adjustScores(state.scores, state.answered, keys);
   const order = rankKeys(adj, state.scores, state.tieRank);
-  const top1 = order[0];
-  const top2 = order[1];
-  const subj = document.getElementById('subjectName').value.trim() || 'Profil';
-  const modeLabel = document.querySelector(`.mode-card[data-mode="${state.mode}"] .mode-title`).textContent;
-  const skipped = state.total - state.answered.length;
+  const subject = document.getElementById('subjectName').value.trim() || 'Profil';
 
   state.lastScores = { adj: { ...adj }, order: order.slice() };
+  const r = {
+    id: state.historyId, universe: state.universe, mode: state.mode, modeLabel: MODE_LABELS[state.mode] || '',
+    subject, total: state.total, answeredCount: state.answered.length, adj, order, fromHistory: false
+  };
+  state.lastResult = r;
+  recordHistory(r);
+  renderResults(r);
+}
 
-  document.getElementById('resSubject').textContent = `${subj} • ${modeLabel}`;
+function renderResults(r) {
+  if (state.universe !== r.universe) setUniverse(r.universe);
+  document.getElementById('viewHome').classList.add('hidden');
+  document.getElementById('viewQuiz').classList.add('hidden');
+  document.getElementById('viewResult').classList.remove('hidden');
+
+  const meta = r.universe === '12' ? META_12 : META_7;
+  const keys = Object.keys(meta);
+  const adj = r.adj, order = r.order;
+  const top1 = order[0], top2 = order[1];
+  const skipped = r.total - r.answeredCount;
+  const strength = profileStrength(r.universe, r.answeredCount, adj[top1]);
+
+  document.getElementById('resSubject').textContent =
+    `${r.subject} • ${r.modeLabel}` + (r.fromHistory ? ` • ${dateLabel(r.id)}` : '');
   document.getElementById('resSignature').textContent = `${meta[top1].full} — ${meta[top2].full}`;
   let summary = `<strong>Moteur :</strong> ${meta[top1].motor}<br><strong>Ombre :</strong> ${meta[top1].shadow}`;
   if (adj[top1] === adj[top2]) {
@@ -1207,7 +1281,7 @@ function showResults() {
   document.getElementById('resSummary').innerHTML = summary;
 
   const duoDiag = document.getElementById('duoDiagnostic');
-  if (state.duoSaved && state.duoSaved.universe === state.universe) {
+  if (!r.fromHistory && state.duoSaved && state.duoSaved.universe === r.universe) {
     const p1 = state.duoSaved.order[0];
     const p2 = state.duoSaved.order[1];
     const aligned = (p1 === top1);
@@ -1215,7 +1289,7 @@ function showResults() {
     duoDiag.innerHTML =
       `<strong>Diagnostic Duo (Profil 1 vs Profil 2) :</strong><br>` +
       `• Passage 1 (${state.duoSaved.modeLabel}, ${state.duoSaved.answered} réponses) : <strong>${meta[p1].full} — ${meta[p2].full}</strong><br>` +
-      `• Passage 2 (${modeLabel}, ${state.answered.length} réponses) : <strong>${meta[top1].full} — ${meta[top2].full}</strong><br>` +
+      `• Passage 2 (${r.modeLabel}, ${r.answeredCount} réponses) : <strong>${meta[top1].full} — ${meta[top2].full}</strong><br>` +
       (aligned
         ? `Alignement fort : la posture perçue correspond directement au moteur dominant.`
         : `Décalage révélé : le moteur <em>${meta[p1].full}</em> s'exprime à travers la posture <em>${meta[top1].full}</em>.`);
@@ -1223,43 +1297,295 @@ function showResults() {
     duoDiag.classList.add('hidden');
   }
 
+  // Classement : barres et repère du hasard (trait vertical), valeurs 0 affichées « — »
+  const rt = randomTopFor(r.universe, r.answeredCount);
+  const scale = Math.max(1, rt.p95, ...order.map(k => adj[k]));
+  document.getElementById('rankLegend').textContent =
+    `Indice ajusté : 100 correspond à un archétype pris au hasard. Même en répondant au hasard, le n° 1 monte vers ${rt.p50} ` +
+    `avec ${r.answeredCount} questions : c'est le trait vertical à dépasser. Il se détache nettement au-delà de ${rt.p95}.`;
   const listEl = document.getElementById('rankingList');
   listEl.innerHTML = '';
-  const maxIdx = Math.max(1, ...order.map(k => adj[k]));
   order.forEach((key, i) => {
     const val = adj[key];
     const row = document.createElement('div');
     row.className = 'rank-item' + (i < 2 ? ' hi' : '');
-    const width = Math.round((val / maxIdx) * 100);
+    const width = Math.round((val / scale) * 100);
+    const tick = Math.round((rt.p50 / scale) * 100);
     row.innerHTML = `
       <div class="rank-num ${i < 2 ? 'top' : ''}">${i + 1}</div>
       <div class="rank-main">
         <div class="rank-name">${meta[key].full}</div>
         <div class="rank-desc">${meta[key].motor}</div>
-        <div class="rank-bar" aria-hidden="true"><i style="width:${width}%"></i></div>
+        <div class="rank-bar" aria-hidden="true"><i style="width:${width}%"></i><b style="left:${tick}%"></b></div>
       </div>
       <div class="rank-score">${val > 0 ? val : '—'}</div>
     `;
     listEl.appendChild(row);
   });
 
-  drawRadar(keys, adj, state.duoSaved ? state.duoSaved.scores : null);
+  drawRadar(keys, adj, (!r.fromHistory && state.duoSaved) ? state.duoSaved.scores : null);
 
   const synthEl = document.getElementById('synthText');
   synthEl.innerHTML = '';
-  buildSynthesis(meta, order, adj, state.answered.length).forEach((txt, i) => {
+  buildSynthesis(meta, order, adj, r.answeredCount, strength).forEach((txt, i) => {
     const p = document.createElement('p');
     p.textContent = txt;
     p.className = i === 2 ? 'synth-p synth-note' : 'synth-p';
     synthEl.appendChild(p);
   });
+
+  // Actions : affiner (session en cours seulement), duo, retour
+  const more = (!r.fromHistory && !state.duoSaved) ? refineCount() : 0;
+  document.getElementById('refineCard').classList.toggle('hidden', more === 0);
+  if (more > 0) {
+    document.getElementById('refineBtn').textContent = `Affiner : +${more} questions`;
+    document.getElementById('refineText').textContent = r.answeredCount <= 10
+      ? 'Résultat provisoire : 10 questions donnent surtout un duo probable. Ajoute quelques questions pour le confirmer, tes réponses s\'additionnent.'
+      : `Tu peux encore affiner ce résultat avec ${more} questions de plus : tes réponses s'additionnent.`;
+  }
+  document.getElementById('duoBtn').classList.toggle('hidden', !!r.fromHistory);
+  document.getElementById('backBtn').textContent = r.fromHistory ? 'Retour' : 'Nouvelle session';
+  document.getElementById('shareNote').textContent = '';
+  state.lastResult = r;
+  window.scrollTo && window.scrollTo(0, 0);
 }
 
-function drawRadar(keys, scoresA, scoresB) {
-  const canvas = document.getElementById('radarCanvas');
+// --- Affiner : continuer la même session avec des questions jamais vues ---------------------------
+function freshPool(mode) {
+  const bank = state.universe === '12' ? BANK_12 : BANK_7;
+  const used = new Set(state.questions.map(q => q.id));
+  const keep = q => !used.has(q.id);
+  return mode === 'mix'
+    ? { decl: poolFor(bank, 'decl').filter(keep), obs: poolFor(bank, 'obs').filter(keep) }
+    : { all: poolFor(bank, mode).filter(keep) };
+}
+
+// Nombre de questions qu'on peut ajouter (0 si moins de 5, ou si la session atteint déjà 30).
+function refineCount() {
+  const room = 30 - state.total;
+  if (room < 5 || !state.questions.length) return 0;
+  const f = freshPool(state.mode);
+  let n = state.mode === 'mix'
+    ? 2 * Math.min(Math.floor(room / 2), 5, f.decl.length, f.obs.length)
+    : Math.min(10, room, f.all.length);
+  return n >= 5 ? n : 0;
+}
+
+function refineSession() {
+  const n = refineCount();
+  if (!n) return;
+  const f = freshPool(state.mode);
+  const more = state.mode === 'mix'
+    ? shuffleArray([...sampleStratified(f.decl, n / 2, []), ...sampleStratified(f.obs, n / 2, [])])
+    : sampleStratified(f.all, n, []);
+  state.questions = state.questions.concat(more);
+  state.total = state.questions.length;
+  document.getElementById('viewResult').classList.add('hidden');
+  document.getElementById('viewQuiz').classList.remove('hidden');
+  renderQuestion();   // state.idx pointe déjà sur la première nouvelle question
+}
+
+// --- Historique local (jamais envoyé nulle part) ---------------------------------------------------
+const HISTORY_KEY = 'arch_history';
+const HISTORY_MAX = 30;
+
+function loadHistory() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    return Array.isArray(raw) ? raw : [];
+  } catch (e) { return []; }
+}
+function saveHistory(list) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, HISTORY_MAX))); } catch (e) {}
+}
+// Une session affinée met à jour sa propre entrée (même id) au lieu d'en créer une seconde.
+function recordHistory(r) {
+  const list = loadHistory().filter(e => e.id !== r.id);
+  list.unshift({
+    id: r.id, universe: r.universe, mode: r.mode, modeLabel: r.modeLabel, subject: r.subject,
+    total: r.total, answered: r.answeredCount, adj: r.adj, order: r.order, v: APP_VERSION
+  });
+  saveHistory(list);
+  renderHistory();
+}
+function deleteHistory(id) {
+  saveHistory(loadHistory().filter(e => e.id !== id));
+  renderHistory();
+}
+// Effacement total en deux temps, comme l'abandon de session.
+function clearHistory() {
+  const btn = document.getElementById('historyClearBtn');
+  if (!state.clearArmed) {
+    state.clearArmed = true;
+    btn.textContent = 'Appuie encore pour tout effacer';
+    state.clearTimer = setTimeout(() => { state.clearArmed = false; btn.textContent = 'Tout effacer'; }, 3000);
+    return;
+  }
+  clearTimeout(state.clearTimer);
+  state.clearArmed = false;
+  btn.textContent = 'Tout effacer';
+  saveHistory([]);
+  renderHistory();
+}
+function openHistory(id) {
+  const e = loadHistory().find(x => x.id === id);
+  if (!e) return;
+  renderResults({
+    id: e.id, universe: e.universe, mode: e.mode, modeLabel: e.modeLabel, subject: e.subject,
+    total: e.total, answeredCount: e.answered, adj: e.adj, order: e.order, fromHistory: true
+  });
+}
+function renderHistory() {
+  const card = document.getElementById('historyCard');
+  if (!card) return;
+  const list = loadHistory();
+  card.classList.toggle('hidden', list.length === 0);
+  document.getElementById('historyCount').textContent = list.length ? String(list.length) : '';
+  const box = document.getElementById('historyList');
+  box.innerHTML = '';
+  list.forEach(e => {
+    const meta = e.universe === '12' ? META_12 : META_7;
+    if (!meta[e.order[0]] || !meta[e.order[1]]) return;
+    const row = document.createElement('div');
+    row.className = 'history-row';
+    const open = document.createElement('button');
+    open.className = 'history-open';
+    const title = document.createElement('div');
+    title.className = 'history-title';
+    title.textContent = `${meta[e.order[0]].full} — ${meta[e.order[1]].full}`;
+    const sub = document.createElement('div');
+    sub.className = 'history-sub';
+    sub.textContent = `${dateLabel(e.id)} · ${e.subject} · ${e.modeLabel} · ${e.answered} questions`;
+    open.appendChild(title);
+    open.appendChild(sub);
+    open.onclick = () => openHistory(e.id);
+    const del = document.createElement('button');
+    del.className = 'btn-quiet';
+    del.textContent = 'Supprimer';
+    del.setAttribute && del.setAttribute('aria-label', `Supprimer le résultat du ${dateLabel(e.id)}`);
+    del.onclick = () => deleteHistory(e.id);
+    row.appendChild(open);
+    row.appendChild(del);
+    box.appendChild(row);
+  });
+}
+
+// --- Partage et export ---------------------------------------------------------------------------
+function buildShareText(r) {
+  const meta = r.universe === '12' ? META_12 : META_7;
+  const a = r.order[0], b = r.order[1];
+  return `${r.subject} : ${meta[a].full} — ${meta[b].full}\n` +
+    `Moteur : ${meta[a].motor}\nOmbre : ${meta[a].shadow}\n\n` +
+    `Archétypes Lab, un outil de réflexion (pas un diagnostic) : ${APP_URL}`;
+}
+
+function roundRectPath(ctx, x, y, w, h, rad) {
+  ctx.beginPath();
+  ctx.moveTo(x + rad, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rad);
+  ctx.arcTo(x + w, y + h, x, y + h, rad);
+  ctx.arcTo(x, y + h, x, y, rad);
+  ctx.arcTo(x, y, x + w, y, rad);
+  ctx.closePath();
+}
+
+// Carte 1080 x 1350 (format story) aux couleurs du thème courant.
+function drawShareCard(r) {
+  const W = 1080, H = 1350;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+  const css = n => getComputedStyle(document.body).getPropertyValue(n).trim();
+  const bg = css('--bg') || '#0f172a', card = css('--card') || '#1e293b', accent = css('--accent') || '#d4a373';
+  const text = css('--text') || '#f8fafc', muted = css('--muted') || '#94a3b8';
+  const font = (w, px) => `${w} ${px}px -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif`;
+  const meta = r.universe === '12' ? META_12 : META_7;
+  const a = r.order[0], b = r.order[1];
+
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = card; roundRectPath(ctx, 56, 56, W - 112, H - 112, 52); ctx.fill();
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  ctx.fillStyle = text; ctx.font = font(700, 44);
+  const brandW = (ctx.measureText('Archétypes ') || {}).width || 250;
+  ctx.fillText('Archétypes ', 110, 150);
+  ctx.fillStyle = accent; ctx.fillText('Lab', 110 + brandW, 150);
+  ctx.fillStyle = muted; ctx.font = font(500, 32); ctx.fillText(`${r.subject} • ${r.modeLabel}`, 110, 206);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = accent; ctx.font = font(800, 88); ctx.fillText(meta[a].full, W / 2, 330);
+  ctx.fillStyle = text; ctx.font = font(700, 56); ctx.fillText(`et ${inSentence(meta[b].full)}`, W / 2, 400);
+
+  const rc = document.createElement('canvas');
+  drawRadar(Object.keys(meta), r.adj, null, rc, 600);
+  ctx.drawImage(rc, (W - 600) / 2, 410, 600, 600);
+
+  ctx.textAlign = 'left';
+  r.order.slice(0, 3).forEach((k, i) => {
+    const y = 1090 + i * 56;
+    ctx.fillStyle = i < 2 ? accent : muted; ctx.font = font(700, 36); ctx.fillText(`${i + 1}`, 130, y);
+    ctx.fillStyle = text; ctx.font = font(600, 36); ctx.fillText(meta[k].full, 190, y);
+    ctx.textAlign = 'right'; ctx.fillStyle = i < 2 ? accent : muted; ctx.fillText(String(r.adj[k]), W - 130, y);
+    ctx.textAlign = 'left';
+  });
+  ctx.textAlign = 'center'; ctx.fillStyle = muted; ctx.font = font(500, 26);
+  ctx.fillText('Outil de réflexion, pas un diagnostic', W / 2, 1252);
+  ctx.fillText('nasreddine-m.github.io/archetypes-lab', W / 2, 1282);
+  return cv;
+}
+
+async function shareResult() {
+  const r = state.lastResult;
+  if (!r) return;
+  const note = document.getElementById('shareNote');
+  try {
+    const cv = drawShareCard(r);
+    const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+    const file = new File([blob], 'archetypes-lab.png', { type: 'image/png' });
+    const text = buildShareText(r);
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text, title: 'Archétypes Lab' });
+      note.textContent = 'Partagé.';
+      return;
+    }
+    // Pas de partage de fichier sur cet appareil : l'image est téléchargée.
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url; link.download = 'archetypes-lab.png';
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    note.textContent = 'Image enregistrée sur ton appareil.';
+  } catch (e) {
+    note.textContent = e && e.name === 'AbortError'
+      ? 'Partage annulé.'
+      : 'Impossible de partager ici : essaie « Copier le résumé ».';
+  }
+}
+
+async function copySummary() {
+  const r = state.lastResult;
+  if (!r) return;
+  const note = document.getElementById('shareNote');
+  const text = buildShareText(r);
+  try {
+    await navigator.clipboard.writeText(text);
+    note.textContent = 'Résumé copié.';
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); note.textContent = 'Résumé copié.'; }
+    catch (e2) { note.textContent = 'Copie impossible : sélectionne le texte à la main.'; }
+    ta.remove();
+  }
+}
+
+function drawRadar(keys, scoresA, scoresB, targetCanvas, targetSize) {
+  const canvas = targetCanvas || document.getElementById('radarCanvas');
   const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-  const size = 360;
+  const dpr = targetCanvas ? 1 : (window.devicePixelRatio || 1);
+  const size = targetSize || 360;
+  const k = size / 360;   // échelle (la carte de partage dessine le radar plus grand)
   canvas.width = size * dpr;
   canvas.height = size * dpr;
   ctx.scale(dpr, dpr);
@@ -1267,7 +1593,7 @@ function drawRadar(keys, scoresA, scoresB) {
 
   const cx = size / 2;
   const cy = size / 2;
-  const maxR = 108;
+  const maxR = 108 * k;
   const n = keys.length;
   const allVals = [...Object.values(scoresA), ...(scoresB ? Object.values(scoresB) : [])];
   const maxVal = Math.max(200, ...allVals); // indice : 100 = niveau du hasard
@@ -1301,7 +1627,7 @@ function drawRadar(keys, scoresA, scoresB) {
 
   // Axes & labels (noms longs sur deux lignes pour ne pas être coupés au bord)
   const textCol = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#e2e8f0';
-  ctx.font = '600 12px -apple-system, sans-serif';
+  ctx.font = `600 ${12 * k}px -apple-system, sans-serif`;
   ctx.fillStyle = textCol;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -1312,12 +1638,12 @@ function drawRadar(keys, scoresA, scoresB) {
     ctx.lineTo(cx + maxR * Math.cos(ang), cy + maxR * Math.sin(ang));
     ctx.stroke();
 
-    const lx = cx + (maxR + 28) * Math.cos(ang);
-    const ly = cy + (maxR + 22) * Math.sin(ang);
+    const lx = cx + (maxR + 28 * k) * Math.cos(ang);
+    const ly = cy + (maxR + 22 * k) * Math.sin(ang);
     const words = keys[i].split(' ');
     if (words.length > 1 && keys[i].length > 9) {
-      ctx.fillText(words[0], lx, ly - 7);
-      ctx.fillText(words.slice(1).join(' '), lx, ly + 7);
+      ctx.fillText(words[0], lx, ly - 7 * k);
+      ctx.fillText(words.slice(1).join(' '), lx, ly + 7 * k);
     } else {
       ctx.fillText(keys[i], lx, ly);
     }
@@ -1337,7 +1663,7 @@ function drawRadar(keys, scoresA, scoresB) {
     ctx.fillStyle = fillCol;
     ctx.fill();
     ctx.strokeStyle = strokeCol;
-    ctx.lineWidth = 2.2;
+    ctx.lineWidth = 2.2 * k;
     ctx.stroke();
   }
 
@@ -1387,6 +1713,7 @@ try {
   if (SESSION_LENGTHS.includes(stored)) state.length = stored;
 } catch (e) {}
 updateSessionInfo();
+renderHistory();
 
 // --- PWA : version affichée + service worker (hors-ligne) -------------------
 document.getElementById('appVersion').textContent = APP_VERSION;

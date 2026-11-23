@@ -33,7 +33,7 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
@@ -122,13 +122,64 @@ for (const [w, meta] of [['12', ctx.M12], ['7', ctx.M7]]) {
   }
   ok(bad === 0, `monde ${w} : ${n} synthèses (toutes paires, profil marqué et plat) sans texte manquant`);
 }
-const flatTxt = ctx.synth(ctx.M12, Object.keys(ctx.M12), Object.fromEntries(Object.keys(ctx.M12).map(k => [k, 100])), 10)[0];
+const flatTxt = ctx.synth(ctx.M12, Object.keys(ctx.M12), Object.fromEntries(Object.keys(ctx.M12).map(k => [k, 100])), 10, 'flat')[0];
 const all = (meta, v) => Object.fromEntries(Object.keys(meta).map(k => [k, v]));
 const p12 = ctx.synth(ctx.M12, ['Innocent', 'Sage', ...Object.keys(ctx.M12).filter(k => k !== 'Innocent' && k !== 'Sage')], all(ctx.M12, 200), 10)[0];
 ok(p12.includes("autour de l'Innocent et du Sage"), "accords monde 12 : autour de l'Innocent et du Sage");
 const p7 = ctx.synth(ctx.M7, ['Aphrodite', 'Hestia', ...Object.keys(ctx.M7).filter(k => k !== 'Aphrodite' && k !== 'Hestia')], all(ctx.M7, 200), 10)[0];
 ok(p7.includes("autour d'Aphrodite et d'Hestia"), "accords monde 7 : autour d'Aphrodite et d'Hestia");
-ok(/peu contrasté/.test(flatTxt), 'profil plat détecté (indice < 130)');
+ok(/peu contrasté/.test(flatTxt), 'profil plat : texte « peu contrasté »');
+
+// 4c. Force du profil : seuils calibrés sur des réponses au hasard
+const t12 = ctx.randTop('12', 10);
+ok(ctx.strength('12', 10, t12.p75 - 1) === 'flat' && ctx.strength('12', 10, t12.p75) === 'moderate' && ctx.strength('12', 10, t12.p95) === 'clear', 'force du profil : flat / moderate / clear aux seuils (monde 12, 10 q.)');
+ok(ctx.randTop('12', 22).p50 === ctx.randTop('12', 20).p50 && ctx.randTop('7', 26).p50 === ctx.randTop('7', 30).p50, 'seuils : longueur voisine la plus proche (22 → 20, 26 → 30)');
+const k12 = Object.keys(ctx.M12), ord12 = ['Sage', 'Magicien', ...k12.filter(k => k !== 'Sage' && k !== 'Magicien')];
+const adjHi = Object.fromEntries(k12.map(k => [k, 80])); adjHi.Sage = 300; adjHi.Magicien = 250;
+const modTxt10 = ctx.synth(ctx.M12, ord12, adjHi, 10, 'moderate').join(' ');
+const modTxt30 = ctx.synth(ctx.M12, ord12, adjHi, 30, 'moderate').join(' ');
+ok(/signal reste modéré : davantage de questions/.test(modTxt10) && /signal reste modéré\./.test(modTxt30) && !/davantage de questions/.test(modTxt30) && !/peu contrasté/.test(modTxt10), 'synthèse « modérée » : invite à affiner avant 30 questions seulement');
+
+// 4d. Affiner : continuer la même session avec des questions nouvelles
+const finishAll = () => { while (ctx.S.idx < ctx.S.total) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[0][1], q.o[0][2]); } };
+ctx.setU('7'); ctx.setU('12');   // change d'univers pour clore le Duo laissé actif par le test précédent
+ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
+ok(ctx.refineN() === 10 && !els.refineCard.classList.contains('hidden') && /\+10 questions/.test(els.refineBtn.textContent), 'affiner : « +10 questions » proposé après un aperçu');
+ok(/trait vertical/.test(els.rankLegend.textContent) && /229/.test(els.rankLegend.textContent), 'légende du classement : repère du hasard affiché (229 pour 10 q., monde 12)');
+const sumBefore = Object.values(ctx.S.scores).reduce((a, b) => a + b, 0), sid = ctx.S.historyId;
+ctx.refine();
+ok(ctx.S.total === 20 && ctx.S.idx === 10 && els.qCounter.textContent === 'Question 11 / 20', 'affiner : session prolongée à 20 (Question 11 / 20)');
+ok(new Set(ctx.S.questions.map(q => q.id)).size === 20, 'affiner : 20 questions toutes distinctes');
+finishAll();
+ok(ctx.S.answered.length === 20 && !els.viewResult.classList.contains('hidden') && Object.values(ctx.S.scores).reduce((a, b) => a + b, 0) > sumBefore, 'affiner : 20 réponses, scores additionnés, résultats ré-affichés');
+ctx.refine(); finishAll();
+ok(ctx.S.total === 30 && ctx.S.answered.length === 30 && ctx.refineN() === 0 && els.refineCard.classList.contains('hidden'), 'affiner : plafond à 30 questions, plus de proposition');
+ok(ctx.hist().filter(e => e.id === sid).length === 1 && ctx.hist().find(e => e.id === sid).answered === 30, 'historique : une seule entrée pour la session affinée (30 réponses)');
+ctx.setMode('mix'); ctx.setLen(10); ctx.start(); finishAll();
+ok(ctx.refineN() === 10, 'affiner (mode mixte) : +10 proposé');
+ctx.refine();
+ok(ctx.S.total === 20 && ctx.S.questions.filter(q => q.m === 'Déclaratif').length === 10 && ctx.S.questions.filter(q => q.m === 'Observation').length === 10, 'affiner (mode mixte) : reste 10 déclaratives + 10 observation');
+finishAll();
+ctx.setMode('miroir'); ctx.setLen(20); ctx.start(); finishAll();
+ok(ctx.refineN() === 0, 'affiner : refusé en Miroir (2 questions restantes sur 22, moins de 5)');
+
+// 4e. Historique local
+for (let i = 0; i < 34; i++) { ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll(); }
+ok(ctx.hist().length === 30, 'historique : plafonné à 30 entrées');
+const hid = ctx.hist()[3].id;
+ctx.openH(hid);
+ok(!els.viewResult.classList.contains('hidden') && /Retour/.test(els.backBtn.textContent) && els.refineCard.classList.contains('hidden') && els.duoBtn.classList.contains('hidden'), 'historique : réouverture sans « Affiner » ni Duo, bouton Retour');
+const nH = ctx.hist().length; ctx.delH(hid);
+ok(ctx.hist().length === nH - 1 && !ctx.hist().some(e => e.id === hid), 'historique : suppression d\'une entrée');
+ctx.clrH(); ok(ctx.hist().length > 0, 'historique : « Tout effacer » demande une confirmation');
+ctx.clrH(); ok(ctx.hist().length === 0, 'historique : effacé au second appui');
+
+// 4f. Partage
+ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
+const rr = ctx.S.lastResult, st = ctx.shareText(rr);
+ok(st.includes(rr.subject) && st.includes('https://nasreddine-m.github.io/archetypes-lab/') && /pas un diagnostic/.test(st) && /Moteur :/.test(st), 'partage : texte avec sujet, moteur, ombre, lien et mention');
+const cv = ctx.card(rr);
+ok(cv.width === 1080 && cv.height === 1350, 'partage : carte 1080 x 1350 dessinée sans erreur');
 
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
