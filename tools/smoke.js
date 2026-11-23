@@ -33,7 +33,7 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
@@ -207,6 +207,44 @@ ctx.closeF();
 const mail = ctx.mailUrl(ctx.S.lastResult);
 ok(mail.startsWith('mailto:?subject=') && mail.length < 1950 && decodeURIComponent(mail).includes('pas un diagnostic') && decodeURIComponent(mail).includes('nasreddine-m.github.io/archetypes-lab'), 'e-mail : lien mailto avec sujet, texte, mention et lien, moins de 1950 caractères');
 
+// 4h. Page d'accueil, navigation, palette élargie, rapport PDF
+ok(/id="viewLanding"/.test(html) && /id="homeBtn"/.test(html) && /id="viewHome" class="hidden"/.test(html), 'accueil : page d\'accueil présente, réglages masqués au départ, bouton Accueil dans l\'en-tête');
+const landingHtml = html.slice(html.indexOf('id="viewLanding"'), html.indexOf('<!-- HOME VIEW -->'));
+ok(['Déclaratif pur', 'Observation pure', 'Mixte équilibré', 'Dilemmes &amp; pression', 'Miroir social', 'Tirage intégral', 'Aperçu', 'Standard', 'Approfondi', 'Duo', 'affiner', 'Princesses', 'rapport PDF'].every(t => landingHtml.includes(t)), 'accueil : concept, deux univers, six modes, longueurs, Duo, affiner et rapport expliqués');
+ctx.landing();
+ok((els.landOrb.innerHTML.match(/class="node"/g) || []).length === 12 && els.dots12.children.length === 12 && els.dots7.children.length === 7, 'accueil : illustration (12 archétypes en couronne) et pastilles 12 / 7');
+ctx.goHome();
+ok(!els.homeBtn.classList.contains('hidden') && els.viewLanding.classList.contains('hidden') && !els.viewHome.classList.contains('hidden'), 'navigation : bouton Accueil visible hors de la page d\'accueil');
+ctx.goLand();
+ok(els.homeBtn.classList.contains('hidden') && !els.viewLanding.classList.contains('hidden') && els.viewHome.classList.contains('hidden'), 'navigation : retour à la page d\'accueil, bouton masqué');
+ctx.goHome(); ctx.setU('7'); ctx.setU('12'); ctx.setMode('decl'); ctx.setLen(10); ctx.start();
+{ const q0 = ctx.S.questions[ctx.S.idx]; ctx.choose(q0.o[0][1], q0.o[0][2]); }
+ctx.goLand();
+ok(!els.viewQuiz.classList.contains('hidden') && /Quitter la session/.test(els.homeBtnLabel.textContent), 'navigation : en pleine session, le premier appui demande confirmation');
+ctx.goLand();
+ok(els.viewQuiz.classList.contains('hidden') && !els.viewLanding.classList.contains('hidden') && els.homeBtnLabel.textContent === 'Accueil', 'navigation : le second appui ramène à l\'accueil');
+ctx.goHome();
+
+const hexLum = hx => { const l = [1, 3, 5].map(i => { const v = parseInt(hx.slice(i, i + 2), 16) / 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+const cr = (x, y) => { const p = hexLum(x), q = hexLum(y); return (Math.max(p, q) + 0.05) / (Math.min(p, q) + 0.05); };
+const allK = [...Object.keys(ctx.M12), ...Object.keys(ctx.M7)];
+ok(allK.every(k => ctx.colors[k] && /^#[0-9a-f]{6}$/.test(ctx.colors[k][0]) && /^#[0-9a-f]{6}$/.test(ctx.colors[k][1])), 'palette : une couleur sombre et une couleur papier pour chacun des 19 archétypes');
+ok(allK.every(k => cr(ctx.colors[k][0], '#1c2846') >= 6 && cr(ctx.colors[k][1], '#fbf8f3') >= 3.5), 'palette : contraste ≥ 6:1 sur le fond bleu nuit et ≥ 3,5:1 sur le papier (éléments graphiques : 3:1 requis)');
+
+ctx.setMode('decl'); ctx.setLen(10); ctx.start(); for (let i = 0; i < ctx.S.total; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[i % 4][1], q.o[i % 4][2]); }
+const rrr = ctx.S.lastResult, rc2 = ctx.rep(rrr);
+ok(rc2.strengths.length === 3 && rc2.work.length === 3 && rc2.lecture.length > 50 && rc2.title.includes((ctx.M12[rrr.order[0]] || ctx.M7[rrr.order[0]]).full) && rc2.reliability.includes(String(rrr.answeredCount)), 'rapport : 3 points forts, 3 points à travailler, lecture, fiabilité et titre');
+const fake = new Uint8Array(60); fake[0] = 0xFF; fake[1] = 0xD8; fake[58] = 0xFF; fake[59] = 0xD9; for (let i = 2; i < 58; i++) fake[i] = i;
+const pdfBuf = Buffer.from(ctx.pdf(fake, 100, 141, 'Rapport é'));
+const pdfTxt = pdfBuf.toString('latin1');
+const xrefPos = Number(pdfTxt.match(/startxref\n(\d+)/)[1]);
+const entries = [...pdfTxt.slice(xrefPos).matchAll(/(\d{10}) 00000 n /g)].map(m => Number(m[1]));
+ok(pdfTxt.startsWith('%PDF-1.4') && pdfTxt.trimEnd().endsWith('%%EOF') && pdfTxt.slice(xrefPos, xrefPos + 4) === 'xref' && (pdfTxt.match(/\/Type \/Page /g) || []).length === 1 && /MediaBox \[0 0 595.28 841.89\]/.test(pdfTxt), 'PDF : en-tête, une seule page A4, tableau xref localisé');
+ok(entries.length === 6 && entries.every((off, i) => pdfTxt.slice(off).startsWith(`${i + 1} 0 obj`)), 'PDF : les 6 décalages du tableau xref pointent chacun sur son objet');
+const streamAt = pdfBuf.indexOf('stream\n', pdfBuf.indexOf('/Subtype /Image')) + 7;
+ok(/\/Length 60 /.test(pdfTxt) && pdfBuf.subarray(streamAt, streamAt + 60).equals(Buffer.from(fake)) && /Filter \/DCTDecode/.test(pdfTxt) && /Title <FEFF/.test(pdfTxt), 'PDF : image JPEG intacte, longueur exacte, titre encodé en UTF-16');
+const repPromise = ctx.drawRep(rrr);
+
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
@@ -235,5 +273,6 @@ for (const w of ['12', '7']) {
   ok(bank.length === 100 && bad.length === 0 && new Set(bank.map(q => q.id)).size === 100, `monde ${w} : 100 questions valides (4 options, principaux distincts, ids uniques)`);
 }
 
-console.log(fail ? `\n${fail} ÉCHEC(S)` : '\nTous les tests passent');
-process.exit(fail ? 1 : 0);
+repPromise.then(cv => { ok(cv.width === 1654 && cv.height === 2339, 'rapport : canvas A4 (1654 x 2339) dessiné sans erreur'); })
+  .catch(e => ok(false, 'rapport : ' + e.message))
+  .then(() => { console.log(fail ? `\n${fail} ÉCHEC(S)` : '\nTous les tests passent'); process.exit(fail ? 1 : 0); });
