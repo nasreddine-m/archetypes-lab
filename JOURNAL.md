@@ -13,16 +13,28 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.5.0 | 2026-11-23 | Synthèse | Paragraphe de synthèse du profil sous le radar (portrait en 3 paragraphes : moteur, nuance, relations, ombre, piste, archétypes les moins mobilisés) |
 | v0.6.0 | 2026-11-23 | Style | Style unifié sur la voix des questions d'origine (charte `docs/STYLE.md`) : vouvoiement partout, plus de « Je… », options de ≈ 10 mots ; contrôle automatique |
 | v0.7.0 | 2026-11-23 | Longueur | Longueur de session au choix : 10 (aperçu), **20 (standard, par défaut)**, 30 (approfondi) ; modes plus petits limités à leur taille ; longueur verrouillée en mode Duo |
+| v0.8.0 | 2026-11-23 | Tutoiement | Tout le contenu passe au **tutoiement** (200 questions, synthèse, interface), choix de l'auteur pour un public jeune ; charte et contrôle automatique inversés |
 
 **État actuel :** PWA statique (`index.html` + `manifest.json` + `sw.js` + `icons/`), 2 univers de 100 questions (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, synthèse du profil, comparaison Duo. Le biais de scoring et de banque est faible (v0.4.0 : rapport max/min des poids 1,24 et 1,12). Tests réels (2026-11-23) : iPhone (Safari) OK — installation, ouverture, hors-ligne en mode avion ; Windows OK après une erreur DNS passagère (`DNS_PROBE_FINISHED_NXDOMAIN`, résolue en relançant, aucun défaut dans l'app). Installation depuis Chrome (icône « Installer ») et hors-ligne sur Windows non encore confirmés.
 
-**Prochaines étapes :** (1) tester la v0.7.0 sur iPhone et Windows (installation à jour, longueurs 10/20/30, mode Duo) ; (2) bibliothèque de 6 options dont 4 tirées : **reportée** par l'auteur, on reste à 4 options pour le moment (backlog 8, décision A17) ; (3) pistes : résultat provisoire à 10 questions avec « Affiner de 10 questions », historique local, partage/export, neutralisation du genre du monde 7.
+**Prochaines étapes :** (0) **refonte visuelle pour un public jeune** (évaluation du 2026-11-23, voir ci-dessous) : accueil simplifié, carte de résultat partageable, barres au lieu de chiffres, couleur et icône par archétype, transitions ; l'auteur a demandé d'utiliser l'outil « impeccable », **non installé** dans cet environnement : décision en attente (A23) ; (1) tester la v0.8.0 sur iPhone et Windows (installation à jour, tutoiement, longueurs 10/20/30, mode Duo) ; (2) bibliothèque de 6 options dont 4 tirées : **reportée** par l'auteur, on reste à 4 options pour le moment (backlog 8, décision A17) ; (3) pistes : résultat provisoire à 10 questions avec « Affiner de 10 questions », historique local, partage/export, neutralisation du genre du monde 7.
 
 **Procédure de release :** modifier `APP_VERSION` (index.html) et `CACHE_VERSION` (sw.js) avec la même valeur, lancer `node tools/smoke.js`, commit, push. Sans changement de version, les téléphones gardent l'ancienne version en cache.
 
 ---
 
 ## Journal des versions et modifications
+
+### v0.8.0 — 2026-11-23 — Tutoiement
+- **Décision de l'auteur** : « je préfère tu » (A22). La charte de style passe du vouvoiement au tutoiement (`docs/STYLE.md`, règle 1).
+- **254 textes réécrits à la main** (conjugaisons, pronoms réfléchis, inversions) : 115 questions des deux mondes (énoncés et options, dont une partie des questions d'origine passée au « vous » en v0.6.0), les 40 champs de la synthèse du profil (table `SYNTH`) et les phrases d'interface (« Relance une session », « Choisis maintenant un second mode », « préfère 20 questions ou plus »…). Données : `docs/drafts/tutoiement.js` ; outil : `tools/apply-tutoiement.js`. Les archétypes principal/secondaire ne sont pas touchés : les poids sont identiques (rapports 1,24 et 1,12).
+- `tools/style-check.js` inversé : il signale désormais tout « vous / votre / vos » (sauf le nom « rendez-vous »). Le test de bout en bout l'inclut.
+- Une faute repérée à la relecture avant publication : « tu disséques » corrigé en « tu dissèques ». Un « vous » pluriel (« ce que vous avez bâti ensemble ») remplacé par une tournure impersonnelle.
+- **Limite :** la correction grammaticale est relue par moi et vérifiée par motif, pas par un correcteur orthographique ; quelques tournures peuvent encore sonner moins naturelles à l'oral. À signaler lors du test.
+- Le monde 7 reste au féminin pour la personne interrogée (« seule », « enfermée », « alignée »), comme à l'origine.
+
+### Évaluation de la présentation (2026-11-23, captures du site à 500 px de large, Chrome sans fenêtre)
+Constat : propre, cohérent, lisible, mais **sobre et plutôt « adulte »** pour un public de 15-25 ans. Points faibles : accueil en forme de formulaire de réglages (4 cartes avant la première question), vocabulaire académique (« Mode de tirage dynamique », « Tirage Intégral »), résultats techniques (indices 286/215/160 puis une série de 0), aucune carte de résultat à partager, aucune identité visuelle par archétype, interface statique, polices d'aide à 10,5-11 px, pas de mode clair. Plan proposé : (1) accueil simplifié avec un seul gros bouton et réglages repliés ; (2) carte de résultat partageable (Web Share) ; (3) barres colorées et « peu présent » à la place des 0 ; (4) couleur et icône par archétype ; (5) transitions et encouragements ; (6) textes moins académiques ; (7) polices ≥ 12 px et mode clair optionnel. Limite : captures à 500 px, pas un vrai iPhone.
 
 ### v0.7.0 — 2026-11-23 — Longueur de session au choix
 - **Recommandation validée par l'auteur** (« ok ») après l'étude de fiabilité (A19) : trois formules, **Standard 20 par défaut**.
@@ -155,6 +167,8 @@ Question de l'auteur : quel est le nombre idéal de questions ? Simulation avec 
 | A19 | 2026-11-23 | Recommander **20 questions par défaut** (aperçu 10, approfondi 30) | Simulation de fiabilité (`docs/session-length-v0.5.0.txt`) : à 10 questions le n° 1 du monde 12 n'est retrouvé que 38-52 % du temps ; rendements décroissants après 30 | Rester à 10 : résultat trop instable ; 50 : lassitude pour un gain d'environ 5 points |
 | A20 | 2026-11-23 | Un mode plus petit que la longueur demandée est **limité à sa taille** (Miroir : 22 / 21), avec une note visible, plutôt que de compléter avec des questions d'un autre type | Respecte la définition du mode (Miroir = impressions sociales) ; transparent pour l'utilisateur | Compléter avec le reste de la banque : mélange des types, mode dénaturé |
 | A21 | 2026-11-23 | Longueur **verrouillée en mode Duo** | Comparer deux passages de longueurs différentes rendrait le diagnostic non comparable (la fiabilité dépend du nombre de questions) | Laisser libre et avertir |
+| A22 | 2026-11-23 | **Tutoiement** dans toute l'application | Demande explicite de l'auteur, pour un public jeune. Renverse la décision A18 sur ce point précis (A18 avait aligné sur les questions d'origine, alors majoritairement au vouvoiement) | Garder le vouvoiement : plus formel, moins proche d'un public jeune |
+| A23 | 2026-11-23 | **Outil « impeccable » non installé** : refonte visuelle en attente de décision (l'installer soi-même, ou je conçois sans cet outil) | Il n'existe ni dans les skills, ni dans les plugins installés, ni dans les catalogues configurés. Installer un outil tiers sans vérification de sa source n'est pas fait sans accord explicite | Installer automatiquement un plugin non vérifié |
 | A9 | 2026-11-23 | Ne pas rééquilibrer la banque dans la v0.2.0 | Rééquilibrer demande de réécrire des dizaines d'options et de les relire une à une : c'est un chantier de contenu à part (backlog 2) | Tout corriger d'un coup : version trop large, régression difficile à isoler |
 
 ---
