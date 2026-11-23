@@ -15,7 +15,7 @@ Archétypes Lab est un questionnaire de réflexion sur soi : l'utilisateur répo
 ## Positioning
 Ce qu'un test de personnalité ordinaire ne fait pas (confirmé par l'auteur) :
 - **Se voir vs être vu** : deux familles de questions, Déclaratif (ce que tu dis de toi) et Observation (ce qu'on observe de quelqu'un), comparables en mode Duo avec deux radars superposés.
-- **Deux univers** : les 12 Archétypes (mixte) et les 7 Déesses (monde au féminin, avec sa propre ambiance), chacun avec 100 questions.
+- **Deux univers** : les 12 Archétypes (mixte) et les 7 Princesses (anciennement « 7 Déesses » : intitulé changé le 2026-11-23, profils grecs inchangés ; monde au féminin, avec sa propre ambiance), chacun avec 100 questions.
 - **Fonctionne hors-ligne, sans compte** : aucune donnée envoyée, rien à créer ; tout reste dans l'appareil.
 
 ## Operating Context
@@ -35,7 +35,7 @@ Application web statique, un fichier `index.html` (HTML/CSS/JS sans framework) +
 ## Brand Commitments
 - Nom : **Archétypes Lab**. Voix : **tutoiement direct et bienveillant**, phrases courtes, sans jargon, comme un ami qui pose de bonnes questions (confirmé par l'auteur).
 - Mention à conserver : « Outil de réflexion personnelle, pas un diagnostic psychologique ».
-- Aucune référence visuelle ni couleur n'est imposée par l'auteur à ce stade.
+- **Identité visuelle d'origine à conserver** (décision de l'auteur, 2026-11-23, après avoir refusé les directions « ludiques et fantaisistes » proposées) : thème sombre bleu nuit (#0f172a, cartes #1e293b), accent or (#d4a373), thème rosé distinct pour les Princesses, police système, cartes arrondies. La modernisation se fait **dans** ce style (hiérarchie, lisibilité, états, animation discrète), pas en le remplaçant.
 
 ## Evidence on Hand
 - Une banque de 200 questions rédigées et un contrôle de qualité chiffré : poids équilibrés (rapport max/min 1,24 pour le monde 12, 1,12 pour le monde 7), simulations de fiabilité selon la longueur (`docs/session-length-v0.5.0.txt`, `docs/balance-v0.4.0.txt`).
@@ -46,7 +46,7 @@ Application web statique, un fichier `index.html` (HTML/CSS/JS sans framework) +
 1. **Honnête sur ses limites** : 10 à 30 questions donnent un point de départ, pas une vérité ; l'interface le dit sans l'enterrer.
 2. **Se comprendre avant de se montrer** : la lecture du résultat est la récompense ; tout ce qui la précède reste léger.
 3. **Deux regards** : se voir et être vu est ce qui distingue le produit ; le Duo est une fonction centrale, pas un bonus.
-4. **Deux mondes, deux identités** : les 12 Archétypes et les 7 Déesses sont lus comme deux univers distincts.
+4. **Deux mondes, deux identités** : les 12 Archétypes et les 7 Princesses sont lus comme deux univers distincts.
 5. **Privé par défaut** : tout reste sur l'appareil, aucun compte.
 
 ## Accessibility & Inclusion

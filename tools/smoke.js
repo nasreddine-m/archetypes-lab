@@ -29,7 +29,7 @@ const ctx = {
   localStorage: { getItem: k => store[k] ?? null, setItem: (k, v) => store[k] = v },
   getComputedStyle: () => ({ getPropertyValue: () => '#fff' }),
   window: { devicePixelRatio: 1 },
-  setInterval: () => 1, clearInterval: () => {},
+  setInterval: () => 1, clearInterval: () => {}, setTimeout: () => 1, clearTimeout: () => {},
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
