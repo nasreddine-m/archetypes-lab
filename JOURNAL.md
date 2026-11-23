@@ -10,16 +10,27 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.2.0 | 2026-11-23 | Scoring | Indice ajusté par l'exposition de chaque archétype, chrono expiré sans point, départage aléatoire, correction Q33 (monde 7) |
 | v0.3.0 | 2026-11-23 | PWA | Installable (manifeste, icônes, écran d'accueil iOS, bouton Installer Chrome), hors-ligne via service worker, version affichée |
 | v0.4.0 | 2026-11-23 | Banque (publiée sur `main` pour test par l'auteur, relecture en cours) | 100 questions par univers (50 → 100), options rééquilibrées : rapport max/min des poids 3,68 → 1,24 (monde 12) et 1,61 → 1,12 (monde 7) |
+| v0.5.0 | 2026-11-23 | Synthèse | Paragraphe de synthèse du profil sous le radar (portrait en 3 paragraphes : moteur, nuance, relations, ombre, piste, archétypes les moins mobilisés) |
 
-**État actuel :** PWA statique (`index.html` + `manifest.json` + `sw.js` + `icons/`), 2 univers (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, comparaison Duo. Le biais de scoring est fortement réduit (en tête pour un répondant au hasard : 0,3–24 % → 6–13 % dans le monde 12) mais pas supprimé : le déséquilibre est dans la banque de questions elle-même. Tests réels (2026-11-23) : iPhone (Safari) OK — installation, ouverture, hors-ligne en mode avion ; Windows OK après une erreur DNS passagère (`DNS_PROBE_FINISHED_NXDOMAIN`, résolue en relançant, aucun défaut dans l'app). Installation depuis Chrome (icône « Installer ») et hors-ligne sur Windows non encore confirmés.
+**État actuel :** PWA statique (`index.html` + `manifest.json` + `sw.js` + `icons/`), 2 univers de 100 questions (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, synthèse du profil, comparaison Duo. Le biais de scoring et de banque est faible (v0.4.0 : rapport max/min des poids 1,24 et 1,12). Tests réels (2026-11-23) : iPhone (Safari) OK — installation, ouverture, hors-ligne en mode avion ; Windows OK après une erreur DNS passagère (`DNS_PROBE_FINISHED_NXDOMAIN`, résolue en relançant, aucun défaut dans l'app). Installation depuis Chrome (icône « Installer ») et hors-ligne sur Windows non encore confirmés.
 
-**Prochaine étape :** rééquilibrage de la banque de questions (backlog 2), seule vraie solution au biais résiduel, puis résultats enrichis (backlog 3).
+**Prochaines étapes (suggestions de l'auteur après test de la v0.4.0) :** (1) unifier le style des 200 questions (backlog 7) ; (2) passer à 6 options par question dont 4 tirées au hasard à chaque session (backlog 8).
 
 **Procédure de release :** modifier `APP_VERSION` (index.html) et `CACHE_VERSION` (sw.js) avec la même valeur, lancer `node tools/smoke.js`, commit, push. Sans changement de version, les téléphones gardent l'ancienne version en cache.
 
 ---
 
 ## Journal des versions et modifications
+
+### v0.5.0 — 2026-11-23 — Synthèse du profil
+- **Suggestion de l'auteur** : « donner après la représentation en radar un paragraphe de synthèse sur le profil ».
+- Nouvelle carte « Synthèse du profil » juste sous le radar : 3 paragraphes. (1) Dominante : moteur de l'archétype n° 1 et nuance apportée par le n° 2 (ou « profil peu contrasté » si l'indice du n° 1 est inférieur à 130). (2) Relations, zone d'ombre possible, piste pour progresser. (3) Archétypes les moins mobilisés, avec rappel que ce n'est pas un diagnostic.
+- Textes dans une table `SYNTH` (4 champs par archétype : `trait`, `nuance`, `relation`, `piste`, soit 19 entrées), formulations neutres (« on vous perçoit comme quelqu'un de... »). La fonction `buildSynthesis` compose le portrait ; les accords des noms (« du Sage », « de l'Innocent », « d'Aphrodite ») sont gérés.
+- La combinaison est **compositionnelle** : la synthèse dépend surtout de l'archétype n° 1 et du n° 2. Les 132 paires du monde 12 ne sont pas rédigées une par une.
+- `tools/smoke.js` teste : les 19 entrées complètes, 348 synthèses (toutes les paires, profil marqué et plat) sans « undefined », sans erreur d'accord, le cas « profil plat » et les deux accords types.
+- Un bug trouvé par ces tests avant publication : « de L'Innocent et de Le Sage » (accord des noms), corrigé.
+
+**Limite :** le texte est générique par archétype ; il ne tient pas compte des réponses précises ni de l'écart entre mode déclaratif et observation (le diagnostic Duo reste dans son encadré).
 
 ### v0.4.0 — 2026-11-23 — Banque de 100 questions par univers (publiée pour test, relecture en cours)
 - **+100 questions** : ids 51–100 dans chaque univers (25 Déclaratif + 25 Observation par univers). Les 50 questions d'origine sont inchangées. Brouillons dans `docs/drafts/`, relecture dans `docs/revue-questions-v0.4.0.md`.
@@ -111,6 +122,9 @@ Source : `docs/balance-baseline.txt` (`node tools/balance.js`).
 ---
 
 ## Backlog priorisé
+
+7. **Unifier le style des questions** (suggestion de l'auteur : « le style des nouvelles questions est bien identifiable »). Écarts mesurés entre les questions d'origine (id ≤ 50) et les nouvelles (id > 50) : options plus longues (monde 12 : 10,0 → 12,7 mots ; monde 7 : 10,2 → 13,1), **aucune** option d'origine à la première personne (« Je... ») contre 13 % et 16 % des nouvelles, plus d'options entre guillemets dans le monde 7 (2 % → 6 %), et 14 % des énoncés d'origine du monde 12 tutoient alors que tout le reste vouvoie. Charte proposée : options de 8 à 12 mots, sans « Je » (infinitif ou groupe nominal en Déclaratif, « Il/Elle + présent » en Observation), formes parallèles au sein d'une question, vouvoiement partout, registre sobre des questions d'origine. Direction proposée : aligner les nouvelles questions sur les anciennes (voix d'origine de l'auteur).
+8. **Bibliothèque de 6 options par question, 4 tirées au hasard** (suggestion de l'auteur). À prévoir : 2 options supplémentaires pour chacune des 200 questions (400 rédactions) avec 6 archétypes principaux distincts ; `computeExposure` calculée sur les 4 options **réellement affichées** (déjà compatible si on lui passe la version tirée) ; tirage sans doublon ; outils de mesure (`balance.js`, `pools.js`, `merge-bank.js`) à adapter pour 6 options. Avantages : moins de mémorisation entre sessions, moins d'effet de position et de biais d'option. Inconvénient : un peu plus de variabilité entre deux sessions d'une même personne (chaque option a 2 chances sur 3 d'apparaître).
 
 1. ~~**Scoring (v0.2.0)**~~ : fait.
 2. ~~**Banque**~~ : fait en v0.4.0 (reste à relire et publier). Pistes restantes : rééquilibrer le pool Dilemmes du monde 12 ; neutraliser le genre du monde 7. Initialement : rééquilibrer les options (plus de choix primaires Innocent, Amoureux, Bouffon, Homme ordinaire, Héra, Perséphone) ; ≥ 15 questions éligibles par mode (Miroir Social du monde 12 : 10 seulement) ; neutraliser le genre du monde 7 ou l'assumer. Objectif chiffré : rapport max/min des poids < 1,3 et part en tête d'un répondant au hasard entre 6 % et 11 % dans le monde 12.

@@ -388,6 +388,16 @@
     margin-bottom: 14px;
   }
   .hidden { display: none !important; }
+  .synth-p {
+    margin: 0 0 10px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .synth-p:last-child { margin-bottom: 0; }
+  .synth-note {
+    font-size: 12px;
+    color: var(--muted);
+  }
   .app-footer {
     text-align: center;
     font-size: 11px;
@@ -499,6 +509,11 @@
       <canvas id="radarCanvas" width="340" height="340"></canvas>
     </div>
 
+    <div class="card" id="synthCard">
+      <label class="field-label">Synthèse du profil</label>
+      <div id="synthText"></div>
+    </div>
+
     <div class="card">
       <label class="field-label">Classement détaillé</label>
       <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Indice ajusté : 100 = niveau du hasard, au-dessus = affinité marquée.</div>
@@ -514,7 +529,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.4.0';
+const APP_VERSION = 'v0.5.0';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -782,6 +797,61 @@ function rankKeys(adj, raw, tieRank) {
     (adj[b] - adj[a]) || (raw[b] - raw[a]) || ((tieRank[a] || 0) - (tieRank[b] || 0)));
 }
 
+// --- Synthèse du profil (v0.5.0) --------------------------------------------
+// Textes par archétype, composés en un portrait court. Formulations neutres (« quelqu'un de... »)
+// pour rester valables quel que soit le genre de la personne.
+const SYNTH = {
+  "Magicien": { trait: "comprendre les mécanismes cachés pour transformer en profondeur ce qui vous entoure", nuance: "un regard qui repère les leviers invisibles et fait basculer les situations", relation: "on vous perçoit comme quelqu'un d'intense, qui devine ce qui se joue sous la surface", piste: "ancrer vos visions dans des étapes concrètes et partager vos intentions plutôt que les garder pour vous" },
+  "Sage": { trait: "chercher la vérité et la rigueur avant d'agir", nuance: "un besoin de comprendre, de vérifier et de prendre du recul avant de vous engager", relation: "on vous apprécie pour votre justesse et votre calme, parfois pris pour de la distance", piste: "passer plus tôt de l'analyse à l'action et laisser davantage de place à l'émotion" },
+  "Hors-la-loi": { trait: "remettre en cause l'ordre établi et refuser de plier devant des règles que vous jugez absurdes", nuance: "un goût de la rupture et une franchise qui bouscule", relation: "on vous perçoit comme quelqu'un de libre, de direct, parfois d'imprévisible", piste: "choisir vos combats : une rupture est plus efficace quand elle sert un but précis" },
+  "Explorateur": { trait: "préserver votre autonomie et repousser vos frontières", nuance: "une soif de découverte et un besoin d'indépendance", relation: "on vous perçoit comme quelqu'un d'ouvert, qui tient à sa liberté et supporte mal l'enfermement", piste: "vous engager durablement envers quelques lieux, projets ou personnes qui comptent vraiment" },
+  "Créateur": { trait: "bâtir une œuvre personnelle, singulière et durable", nuance: "une exigence d'originalité et un besoin d'exprimer ce qui vous est propre", relation: "on vous associe à l'imagination, avec parfois un perfectionnisme qui retarde la suite", piste: "accepter qu'une version imparfaite mais partagée vaille mieux qu'une version parfaite gardée pour soi" },
+  "Souverain": { trait: "structurer, décider et garantir la stabilité de ce dont vous avez la charge", nuance: "un sens des responsabilités et de l'organisation", relation: "vous inspirez confiance et autorité, au risque de décider un peu vite pour les autres", piste: "déléguer davantage et écouter avant de trancher" },
+  "Héros": { trait: "relever les défis et prouver votre valeur par l'effort", nuance: "du courage, de la discipline et le goût de l'épreuve", relation: "on compte sur vous dans les moments difficiles", piste: "apprendre à demander de l'aide et à vous reposer sans culpabiliser" },
+  "Protecteur": { trait: "veiller sur les autres et préserver le groupe", nuance: "une grande générosité et le sens du service", relation: "vous êtes quelqu'un sur qui l'on peut toujours compter", piste: "vous inclure dans votre propre attention : poser des limites et recevoir autant que vous donnez" },
+  "Amoureux": { trait: "créer des liens profonds, intimes et sensoriels", nuance: "une sensibilité à la beauté, à l'intimité et à l'intensité émotionnelle", relation: "on vous ressent comme quelqu'un de chaleureux et d'engagé, parfois très sensible au regard de l'autre", piste: "cultiver aussi une intimité avec vous-même, indépendante de l'approbation des autres" },
+  "Bouffon": { trait: "dédramatiser par l'humour, le jeu et le paradoxe", nuance: "de la spontanéité, de la légèreté et l'art de détendre l'atmosphère", relation: "vous mettez à l'aise et vous faites rire, parfois pour éviter les sujets sérieux", piste: "oser rester dans les moments graves sans les désamorcer" },
+  "Homme ordinaire": { trait: "cultiver l'authenticité, le bon sens et l'appartenance au groupe", nuance: "de l'humilité et un goût du concret et du collectif", relation: "on vous trouve simple, fiable et facile à vivre", piste: "affirmer vos préférences même lorsqu'elles vous distinguent du groupe" },
+  "Innocent": { trait: "préserver la confiance, la simplicité et l'harmonie", nuance: "une confiance spontanée et un optimisme tranquille", relation: "vous inspirez sérénité et sincérité, au risque de ne pas voir les rapports de force", piste: "garder votre confiance tout en vérifiant les faits et en posant des limites claires" },
+  "Athéna": { trait: "analyser, planifier et agir avec lucidité et efficacité", nuance: "une clarté stratégique et le goût de la compétence", relation: "on apprécie votre lucidité, parfois ressentie comme de la froideur", piste: "laisser plus de place à l'émotion, la vôtre comme celle des autres, dans vos décisions" },
+  "Artémis": { trait: "protéger votre liberté et agir par vous-même", nuance: "une indépendance farouche et un lien fort à l'action et à la nature", relation: "on vous perçoit comme quelqu'un de franc et d'autonome, loyal envers ceux que vous choisissez de défendre", piste: "accepter la vulnérabilité et la dépendance choisie comme des forces" },
+  "Hestia": { trait: "cultiver le calme, le centrage et l'ordre intérieur", nuance: "une sérénité discrète et le sens du foyer et du rituel", relation: "vous apportez de la paix autour de vous, parfois au prix de votre visibilité", piste: "vous exprimer davantage et sortir de votre retrait quand quelque chose compte vraiment" },
+  "Héra": { trait: "vous engager durablement et construire des liens loyaux", nuance: "le sens de la fidélité, du partenariat et de la dignité", relation: "on compte sur votre loyauté et votre constance", piste: "assouplir vos attentes quand quelqu'un s'écarte des engagements communs" },
+  "Déméter": { trait: "nourrir, soutenir et transmettre", nuance: "une générosité sans condition et un instinct du soin", relation: "on trouve auprès de vous refuge et réconfort", piste: "vous donner autant d'attention qu'aux autres et laisser chacun grandir par lui-même" },
+  "Perséphone": { trait: "rester réceptif, intuitif et souple face aux changements", nuance: "une empathie profonde et une capacité de métamorphose", relation: "on vous perçoit comme quelqu'un de doux, de mystérieux et d'attentif", piste: "poser des frontières plus nettes et trancher plutôt que laisser les choses flotter" },
+  "Aphrodite": { trait: "créer de l'intensité, de la beauté et de la passion", nuance: "du magnétisme, une sensibilité esthétique et un besoin d'intensité", relation: "vous rayonnez et vous attirez, mais l'intensité permanente peut fragiliser la durée", piste: "trouver aussi de la satisfaction dans les moments calmes et réguliers" }
+};
+
+// Accords des noms d'archétypes : « de Le Sage » → « du Sage », « de L'Innocent » → « de l'Innocent », « de Athéna » → « d'Athéna ».
+const deName = n => /^Le /.test(n) ? "du " + n.slice(3) : /^L'/.test(n) ? "de l'" + n.slice(2) :
+  /^[AEIOUÉÈHaeiouéèh]/.test(n) ? "d'" + n : "de " + n;
+const inSentence = n => /^(Le |L')/.test(n) ? n.charAt(0).toLowerCase() + n.slice(1) : n;
+
+// Portrait en 3 paragraphes à partir du classement. `order` : clés triées, `adj` : indices ajustés.
+function buildSynthesis(meta, order, adj, answeredCount) {
+  const k1 = order[0], k2 = order[1];
+  const s1 = SYNTH[k1], s2 = SYNTH[k2];
+  const lc = t => t.charAt(0).toLowerCase() + t.slice(1);
+  const n1 = meta[k1].full, n2 = meta[k2].full;
+  const flat = adj[k1] < 130;      // aucun archétype ne ressort nettement par rapport au hasard
+  const tie = adj[k1] === adj[k2];
+
+  let p1;
+  if (flat) {
+    p1 = `Vos réponses dessinent un profil peu contrasté : aucun archétype ne se détache nettement du hasard (indice 100). ` +
+      `Si une dominante apparaît, c'est ${inSentence(n1)}, suivi ${deName(n2)}. Votre moteur serait alors de ${s1.trait}.`;
+  } else {
+    p1 = `Votre profil s'organise autour ${deName(n1)} et ${deName(n2)}${tie ? " (à égalité, l'ordre est indicatif)" : ''}. ` +
+      `Votre moteur dominant : ${s1.trait}. ${n2} y ajoute ${s2.nuance}.`;
+  }
+  const p2 = `Dans les relations, ${s1.relation}. Zone d'ombre possible : ${lc(meta[k1].shadow.replace(/\.$/, ''))}. ` +
+    `Piste pour progresser : ${s1.piste}.`;
+  const low = order.slice(-2).map(k => inSentence(meta[k].full));
+  const p3 = `Les archétypes les moins mobilisés dans cette session sont ${low[0]} et ${low[1]} : cela ne dit rien de vos capacités, ` +
+    `seulement de ce que vous avez choisi parmi ces ${answeredCount} questions. Ce portrait est un point de départ pour la réflexion, pas un diagnostic.`;
+  return [p1, p2, p3];
+}
+
 let state = {
   universe: '12',
   mode: 'decl',
@@ -1046,6 +1116,15 @@ function showResults() {
   });
 
   drawRadar(keys, adj, state.duoSaved ? state.duoSaved.scores : null);
+
+  const synthEl = document.getElementById('synthText');
+  synthEl.innerHTML = '';
+  buildSynthesis(meta, order, adj, state.answered.length).forEach((txt, i) => {
+    const p = document.createElement('p');
+    p.textContent = txt;
+    p.className = i === 2 ? 'synth-p synth-note' : 'synth-p';
+    synthEl.appendChild(p);
+  });
 }
 
 function drawRadar(keys, scoresA, scoresB) {

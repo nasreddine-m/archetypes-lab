@@ -1,7 +1,7 @@
 // Service worker : met l'application en cache pour le hors-ligne.
 // IMPORTANT : CACHE_VERSION doit être identique à APP_VERSION dans index.html
 // (vérifié par tools/smoke.js). Changer cette valeur à chaque release force la mise à jour.
-const CACHE_VERSION = 'v0.4.0';
+const CACHE_VERSION = 'v0.5.0';
 const CACHE_NAME = `archetypes-lab-${CACHE_VERSION}`;
 const SHELL = [
   './',

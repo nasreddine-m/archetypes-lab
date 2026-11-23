@@ -5,12 +5,16 @@ const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
 
 const els = {};
 function el(id) {
-  return els[id] || (els[id] = {
-    id, textContent: '', innerHTML: '', value: 'Test', checked: false, style: {}, children: [], dataset: {},
+  if (els[id]) return els[id];
+  const o = (els[id] = {
+    id, textContent: '', value: 'Test', checked: false, style: {}, children: [], dataset: {},
     classList: { _s: new Set(), add(...c) { c.forEach(x => this._s.add(x)); }, remove(...c) { c.forEach(x => this._s.delete(x)); }, toggle(c, f) { f ? this._s.add(c) : this._s.delete(c); }, contains(c) { return this._s.has(c); } },
     appendChild(c) { this.children.push(c); },
     getContext() { return new Proxy({}, { get: () => () => {}, set: () => true }); },
   });
+  let html = '';
+  Object.defineProperty(o, 'innerHTML', { get: () => html, set: v => { html = v; o.children = []; } });
+  return o;
 }
 const doc = {
   getElementById: el,
@@ -29,7 +33,7 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
@@ -65,6 +69,32 @@ ctx.duo();
 ctx.start();
 for (let i = 0; i < 10; i++) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[3][1], q.o[3][2]); }
 ok(!els.duoDiagnostic.classList.contains('hidden') && /Passage 1/.test(els.duoDiagnostic.innerHTML), 'duo : diagnostic affiché');
+
+// 4b. Synthèse du profil
+const bare = n => n.replace(/^(Le |L')/, ''); // le texte écrit « du Sage », « de l'Innocent »
+ok(els.synthText.children.length === 3, 'synthèse affichée : 3 paragraphes dans la page');
+for (const [w, meta] of [['12', ctx.M12], ['7', ctx.M7]]) {
+  const keys = Object.keys(meta);
+  keys.forEach(k => ok(ctx.SYN[k] && ['trait', 'nuance', 'relation', 'piste'].every(f => ctx.SYN[k][f] && ctx.SYN[k][f].length > 15), `SYNTH complet : ${k}`));
+  let bad = 0, n = 0;
+  for (const a of keys) for (const b of keys) {
+    if (a === b) continue;
+    const order = [a, b, ...keys.filter(x => x !== a && x !== b)];
+    for (const level of [200, 100]) {
+      const adj = Object.fromEntries(keys.map(k => [k, 50])); adj[a] = level; adj[b] = level === 200 ? 150 : 100;
+      const txt = ctx.synth(meta, order, adj, 10).join(' '); n++;
+      if (/ de (Le|L'|Les) | d'(Le|L')|de L'|de Le /.test(txt) || txt.includes('undefined') || txt.includes('NaN') || !txt.includes(bare(meta[a].full)) || !txt.includes(bare(meta[b].full))) bad++;
+    }
+  }
+  ok(bad === 0, `monde ${w} : ${n} synthèses (toutes paires, profil marqué et plat) sans texte manquant`);
+}
+const flatTxt = ctx.synth(ctx.M12, Object.keys(ctx.M12), Object.fromEntries(Object.keys(ctx.M12).map(k => [k, 100])), 10)[0];
+const all = (meta, v) => Object.fromEntries(Object.keys(meta).map(k => [k, v]));
+const p12 = ctx.synth(ctx.M12, ['Innocent', 'Sage', ...Object.keys(ctx.M12).filter(k => k !== 'Innocent' && k !== 'Sage')], all(ctx.M12, 200), 10)[0];
+ok(p12.includes("autour de l'Innocent et du Sage"), "accords monde 12 : autour de l'Innocent et du Sage");
+const p7 = ctx.synth(ctx.M7, ['Aphrodite', 'Hestia', ...Object.keys(ctx.M7).filter(k => k !== 'Aphrodite' && k !== 'Hestia')], all(ctx.M7, 200), 10)[0];
+ok(p7.includes("autour d'Aphrodite et d'Hestia"), "accords monde 7 : autour d'Aphrodite et d'Hestia");
+ok(/peu contrasté/.test(flatTxt), 'profil plat détecté (indice < 130)');
 
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
