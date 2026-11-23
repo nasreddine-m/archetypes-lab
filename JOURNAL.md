@@ -10,7 +10,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.2.0 | 2026-11-23 | Scoring | Indice ajusté par l'exposition de chaque archétype, chrono expiré sans point, départage aléatoire, correction Q33 (monde 7) |
 | v0.3.0 | 2026-11-23 | PWA | Installable (manifeste, icônes, écran d'accueil iOS, bouton Installer Chrome), hors-ligne via service worker, version affichée |
 
-**État actuel :** PWA statique (`index.html` + `manifest.json` + `sw.js` + `icons/`), 2 univers (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, comparaison Duo. Le biais de scoring est fortement réduit (en tête pour un répondant au hasard : 0,3–24 % → 6–13 % dans le monde 12) mais pas supprimé : le déséquilibre est dans la banque de questions elle-même. Installation testée par vérifications automatiques ; test sur un vrai iPhone à faire par l'utilisateur.
+**État actuel :** PWA statique (`index.html` + `manifest.json` + `sw.js` + `icons/`), 2 univers (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, comparaison Duo. Le biais de scoring est fortement réduit (en tête pour un répondant au hasard : 0,3–24 % → 6–13 % dans le monde 12) mais pas supprimé : le déséquilibre est dans la banque de questions elle-même. Tests réels (2026-11-23) : iPhone (Safari) OK — installation, ouverture, hors-ligne en mode avion ; Windows OK après une erreur DNS passagère (`DNS_PROBE_FINISHED_NXDOMAIN`, résolue en relançant, aucun défaut dans l'app). Installation depuis Chrome (icône « Installer ») et hors-ligne sur Windows non encore confirmés.
 
 **Prochaine étape :** rééquilibrage de la banque de questions (backlog 2), seule vraie solution au biais résiduel, puis résultats enrichis (backlog 3).
 
@@ -91,6 +91,6 @@ Source : `docs/balance-baseline.txt` (`node tools/balance.js`).
 1. ~~**Scoring (v0.2.0)**~~ : fait.
 2. **Banque** : rééquilibrer les options (plus de choix primaires Innocent, Amoureux, Bouffon, Homme ordinaire, Héra, Perséphone) ; ≥ 15 questions éligibles par mode (Miroir Social du monde 12 : 10 seulement) ; neutraliser le genre du monde 7 ou l'assumer. Objectif chiffré : rapport max/min des poids < 1,3 et part en tête d'un répondant au hasard entre 6 % et 11 % dans le monde 12.
 3. **Résultats** : descriptions détaillées, avertissement « outil de réflexion », nuance du diagnostic Duo (deux tirages de 10 questions différentes ne prouvent pas un « décalage »).
-4. ~~**PWA (v0.3.0)**~~ : fait (reste le test sur un vrai iPhone).
+4. ~~**PWA (v0.3.0)**~~ : fait (testé sur iPhone et Windows).
 5. **UX** : retour arrière, confirmation d'abandon, historique local, partage/export, labels radar non coupés (« Homme ordinaire », « Hors-la-loi »), retrait de `user-scalable=no`, couleurs du radar selon le thème.
 6. **Tests** : étendre `tools/smoke.js` (rendu réel dans un navigateur, test iOS Safari).
