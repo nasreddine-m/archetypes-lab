@@ -473,6 +473,33 @@
     --c-tilleul: #addf92; --c-sauge: #65c495; --c-turquoise: #64e6de; --c-ciel: #46bfe0;
     --c-bleu: #9ad1ff; --c-indigo: #a6a3f4; --c-magenta: #eab7ff; --c-rose: #e58fb8;
   }
+  /* Surfaces crème : la classe .paper change localement les variables de couleur (fond crème, texte bleu nuit, accent bleu nuit).
+     Tout ce qui lit var(--text), var(--accent)… s'adapte sans règle supplémentaire. Alternance bleu nuit / crème sur toutes les pages. */
+  .paper {
+    --bg: #fbf8f3;
+    --card: #ffffff;
+    --card-soft: #f0e7d8;
+    --accent: #1c2846;
+    --accent-soft: rgba(28, 40, 70, 0.09);
+    --accent-ink: #ebcfa9;
+    --accent-2: #4079bf;
+    --text: #1c2846;
+    --muted: #5b6482;
+    --border: rgba(28, 40, 70, 0.16);
+    --danger: #b3261e;
+    --c-coral: #b55558; --c-orange: #904100; --c-amber: #9d6d00; --c-citron: #665d00;
+    --c-tilleul: #558736; --c-sauge: #006f41; --c-turquoise: #008e88; --c-ciel: #00698b;
+    --c-bleu: #4079bf; --c-indigo: #554d9d; --c-magenta: #935faa; --c-rose: #8c3865;
+    background: var(--bg);
+    color: var(--text);
+  }
+  body.theme-women .paper { --bg: #fcf6f6; --accent: #3b2543; --accent-ink: #f3d2b3; --text: #3b2543; --card-soft: #f3e6e6; --muted: #6b5a73; --border: rgba(59, 37, 67, 0.16); }
+  .card.paper { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); border-color: transparent; }
+  .card.paper .btn-primary, .paper .btn-primary { box-shadow: 0 4px 12px rgba(28, 40, 70, 0.22); }
+  .paper .len-btn.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .paper .len-btn.active .len-desc { color: var(--accent-ink); opacity: 0.8; }
+  .paper .radar-paper { background: transparent; box-shadow: none; padding: 0; }
+  .ico { flex: none; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
   .header-right { display: flex; align-items: center; gap: 10px; }
   .home-btn {
     display: inline-flex;
@@ -504,8 +531,9 @@
   .land-title { font-size: 34px; font-weight: 600; letter-spacing: -0.8px; line-height: 1.1; margin: 0 0 12px; text-wrap: balance; }
   .land-lead { font-size: 17px; line-height: 1.5; color: var(--muted); margin: 0 auto 22px; max-width: 34ch; text-wrap: balance; }
   .land-hero .btn-primary { max-width: 360px; }
-  .land-sec { padding: 26px 0; border-top: 1px solid var(--border); }
-  .land-h { font-size: 24px; font-weight: 600; letter-spacing: -0.4px; margin: 0 0 12px; }
+  .land-sec { margin: 0 -20px; padding: 34px 20px; background: var(--bg); box-shadow: 0 0 0 100vmax var(--bg); clip-path: inset(0 -100vmax); }
+  .land-h { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 600; letter-spacing: -0.4px; margin: 0 0 14px; }
+  .land-h .ico { width: 28px; height: 28px; color: var(--accent); }
   .land-h3 { font-size: 17px; font-weight: 700; margin: 22px 0 8px; }
   .land-p { font-size: 16px; line-height: 1.6; margin: 0 0 12px; max-width: 62ch; }
   .land-p.muted { color: var(--muted); font-size: 15px; }
@@ -536,11 +564,15 @@
   .mode-list { margin: 4px 0 16px; }
   .mode-row { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--border); }
   .mode-row:first-child { border-top: none; }
-  .mode-row .dot { flex: none; width: 14px; height: 14px; margin-top: 5px; border-radius: 50%; background: var(--c); }
+  .mode-row .ico { width: 24px; height: 24px; margin-top: 1px; color: var(--c); }
   .mode-row b { display: block; font-size: 16px; }
   .mode-row span { display: block; font-size: 14px; line-height: 1.45; color: var(--muted); margin-top: 2px; }
-  .uses { margin: 0; padding-left: 20px; }
-  .uses li { font-size: 16px; line-height: 1.55; margin: 0 0 8px; max-width: 62ch; }
+  .uses { margin: 0; padding: 0; list-style: none; }
+  .uses li { display: flex; gap: 12px; align-items: flex-start; font-size: 16px; line-height: 1.55; margin: 0 0 12px; max-width: 62ch; }
+  .uses li .ico { width: 22px; height: 22px; margin-top: 2px; color: var(--accent); }
+  .with-ico { display: flex; gap: 12px; align-items: flex-start; }
+  .with-ico .ico { width: 22px; height: 22px; margin-top: 2px; color: var(--accent); }
+  .with-ico.center { justify-content: center; text-align: left; max-width: 44ch; margin: 0 auto 18px; }
   .land-end { text-align: center; }
   .land-end .land-p { margin-left: auto; margin-right: auto; }
   .land-end .btn-primary { max-width: 360px; }
@@ -550,6 +582,29 @@
 </style>
 </head>
 <body>
+  <!-- Icônes dessinées pour l'application (trait, 48 x 48) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-compass" viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><path d="M30 18 L26 27 L18 30 L22 21 Z"/></symbol>
+      <symbol id="i-pair" viewBox="0 0 48 48"><circle cx="18" cy="24" r="11"/><circle cx="30" cy="24" r="11"/></symbol>
+      <symbol id="i-grid" viewBox="0 0 48 48"><rect x="8" y="8" width="13" height="13" rx="3"/><rect x="27" y="8" width="13" height="13" rx="3"/><rect x="8" y="27" width="13" height="13" rx="3"/><rect x="27" y="27" width="13" height="13" rx="3"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 48 48"><path d="M9 40 H39"/><path d="M14 40 V26"/><path d="M24 40 V12"/><path d="M34 40 V20"/></symbol>
+      <symbol id="i-person" viewBox="0 0 48 48"><circle cx="24" cy="16" r="7"/><path d="M10 40 C10 30 17 26 24 26 C31 26 38 30 38 40"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 48 48"><path d="M5 24 C11 14 18 10 24 10 C30 10 37 14 43 24 C37 34 30 38 24 38 C18 38 11 34 5 24 Z"/><circle cx="24" cy="24" r="6"/></symbol>
+      <symbol id="i-half" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><path d="M24 8 V40"/><path d="M8 24 H24"/></symbol>
+      <symbol id="i-fork" viewBox="0 0 48 48"><path d="M24 42 V26"/><path d="M24 26 L12 12"/><path d="M24 26 L36 12"/><path d="M12 20 V12 H20"/><path d="M28 12 H36 V20"/></symbol>
+      <symbol id="i-mirror" viewBox="0 0 48 48"><ellipse cx="24" cy="21" rx="12" ry="15"/><path d="M24 36 V43"/><path d="M17 43 H31"/></symbol>
+      <symbol id="i-shuffle" viewBox="0 0 48 48"><path d="M6 15 H14 C26 15 22 33 34 33 H40"/><path d="M6 33 H14 C18 33 20 30 22 27"/><path d="M26 21 C28 17 30 15 34 15 H40"/><path d="M36 10 L41 15 L36 20"/><path d="M36 28 L41 33 L36 38"/></symbol>
+      <symbol id="i-timer" viewBox="0 0 48 48"><circle cx="24" cy="27" r="14"/><path d="M24 27 V19"/><path d="M19 6 H29"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><path d="M24 16 V32 M16 24 H32"/></symbol>
+      <symbol id="i-radar" viewBox="0 0 48 48"><path d="M24 8 L39 19 L33 37 L15 37 L9 19 Z"/><path d="M24 18 L31 23 L28 31 L20 31 L17 23 Z"/></symbol>
+      <symbol id="i-stamp" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><circle cx="24" cy="24" r="9"/><circle cx="24" cy="24" r="2"/></symbol>
+      <symbol id="i-doc" viewBox="0 0 48 48"><path d="M12 6 H29 L38 15 V42 H12 Z"/><path d="M29 6 V15 H38"/><path d="M18 25 H32 M18 32 H32"/></symbol>
+      <symbol id="i-share" viewBox="0 0 48 48"><circle cx="12" cy="24" r="5"/><circle cx="36" cy="12" r="5"/><circle cx="36" cy="36" r="5"/><path d="M16.5 21.5 L31.5 14.5 M16.5 26.5 L31.5 33.5"/></symbol>
+      <symbol id="i-history" viewBox="0 0 48 48"><circle cx="24" cy="24" r="16"/><path d="M24 14 V24 L31 28"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 48 48"><path d="M24 6 L39 12 V23 C39 33 32 40 24 43 C16 40 9 33 9 23 V12 Z"/><path d="M17 24 L22 29 L31 19"/></symbol>
+    </defs>
+  </svg>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><filter id="stampRough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.5"/></filter></defs></svg>
 <div class="container">
   <header>
@@ -573,8 +628,8 @@
       <button class="btn-quiet" onclick="document.getElementById('concept').scrollIntoView({ behavior: 'smooth' })">Comment ça marche</button>
     </section>
 
-    <section class="land-sec" id="concept">
-      <h2 class="land-h">Le concept</h2>
+    <section class="land-sec paper" id="concept">
+      <h2 class="land-h"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-compass"/></svg>Le concept</h2>
       <p class="land-p">Un archétype est une façon universelle d'agir et de se raconter : le héros qui relève les défis, le sage qui cherche à comprendre, le créateur qui bâtit une œuvre. Tu les portes tous un peu. Archétypes Lab montre lesquels ressortent chez toi.</p>
       <p class="land-p muted">Ce sont des cadres de réflexion inspirés de Carl Jung, de Carol Pearson et de Jean Shinoda Bolen : pas des cases, pas un diagnostic.</p>
       <div class="steps">
@@ -594,7 +649,7 @@
     </section>
 
     <section class="land-sec">
-      <h2 class="land-h">Deux univers</h2>
+      <h2 class="land-h"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-pair"/></svg>Deux univers</h2>
       <div class="uni-grid">
         <button class="uni-card" style="--c: var(--c-turquoise)" onclick="startWith('12')">
           <div class="dots" id="dots12"></div>
@@ -611,39 +666,39 @@
       </div>
     </section>
 
-    <section class="land-sec">
-      <h2 class="land-h">Six façons de participer</h2>
+    <section class="land-sec paper">
+      <h2 class="land-h"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-grid"/></svg>Six façons de participer</h2>
       <div class="mode-list">
-        <div class="mode-row" style="--c: var(--c-sauge)"><i class="dot"></i><div><b>Déclaratif pur</b><span>Tu réponds sur toi, par introspection. 50 questions.</span></div></div>
-        <div class="mode-row" style="--c: var(--c-ciel)"><i class="dot"></i><div><b>Observation pure</b><span>Tu décris quelqu'un d'autre à partir de faits observables. 50 questions.</span></div></div>
-        <div class="mode-row" style="--c: var(--c-amber)"><i class="dot"></i><div><b>Mixte équilibré</b><span>Moitié de questions sur toi, moitié d'observation.</span></div></div>
-        <div class="mode-row" style="--c: var(--c-coral)"><i class="dot"></i><div><b>Dilemmes &amp; pression</b><span>Des choix forcés et des réflexes sous stress. 27 ou 28 questions.</span></div></div>
-        <div class="mode-row" style="--c: var(--c-indigo)"><i class="dot"></i><div><b>Miroir social</b><span>Allure, posture en groupe et première impression. 21 ou 22 questions.</span></div></div>
-        <div class="mode-row" style="--c: var(--c-magenta)"><i class="dot"></i><div><b>Tirage intégral</b><span>Un mélange de toute la banque : 100 questions.</span></div></div>
+        <div class="mode-row" style="--c: var(--c-sauge)"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-person"/></svg><div><b>Déclaratif pur</b><span>Tu réponds sur toi, par introspection. 50 questions.</span></div></div>
+        <div class="mode-row" style="--c: var(--c-ciel)"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-eye"/></svg><div><b>Observation pure</b><span>Tu décris quelqu'un d'autre à partir de faits observables. 50 questions.</span></div></div>
+        <div class="mode-row" style="--c: var(--c-amber)"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-half"/></svg><div><b>Mixte équilibré</b><span>Moitié de questions sur toi, moitié d'observation.</span></div></div>
+        <div class="mode-row" style="--c: var(--c-coral)"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-fork"/></svg><div><b>Dilemmes &amp; pression</b><span>Des choix forcés et des réflexes sous stress. 27 ou 28 questions.</span></div></div>
+        <div class="mode-row" style="--c: var(--c-indigo)"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-mirror"/></svg><div><b>Miroir social</b><span>Allure, posture en groupe et première impression. 21 ou 22 questions.</span></div></div>
+        <div class="mode-row" style="--c: var(--c-magenta)"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-shuffle"/></svg><div><b>Tirage intégral</b><span>Un mélange de toute la banque : 100 questions.</span></div></div>
       </div>
-      <p class="land-p">Tu règles aussi la <b>longueur</b> : <b>Aperçu</b> (10 questions, environ 2 minutes), <b>Standard</b> (20, environ 4 à 5 minutes) ou <b>Approfondi</b> (30, environ 7 minutes). Un <b>chronomètre de 10 secondes</b> est possible pour répondre sur le vif.</p>
+      <p class="land-p with-ico"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-timer"/></svg><span>Tu règles aussi la <b>longueur</b> : <b>Aperçu</b> (10 questions, environ 2 minutes), <b>Standard</b> (20, environ 4 à 5 minutes) ou <b>Approfondi</b> (30, environ 7 minutes). Un <b>chronomètre de 10 secondes</b> est possible pour répondre sur le vif.</span></p>
       <h3 class="land-h3">Quelques usages</h3>
       <ul class="uses">
-        <li><b>Te découvrir seul.</b> Mode Déclaratif, 20 questions.</li>
-        <li><b>Décrire quelqu'un d'autre.</b> Mode Observation, avec son prénom dans « Pour qui ? ».</li>
-        <li><b>Te voir et être vu.</b> Fais une première session, puis « Comparer en Duo » avec un second mode : les deux radars se superposent.</li>
-        <li><b>Un aperçu, puis affiner.</b> Commence par 10 questions, puis ajoute 10 questions nouvelles : tes réponses s'additionnent, jusqu'à 30.</li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-person"/></svg><span><b>Te découvrir seul.</b> Mode Déclaratif, 20 questions.</span></li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-eye"/></svg><span><b>Décrire quelqu'un d'autre.</b> Mode Observation, avec son prénom dans « Pour qui ? ».</span></li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-pair"/></svg><span><b>Te voir et être vu.</b> Fais une première session, puis « Comparer en Duo » avec un second mode : les deux radars se superposent.</span></li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-plus"/></svg><span><b>Un aperçu, puis affiner.</b> Commence par 10 questions, puis ajoute 10 questions nouvelles : tes réponses s'additionnent, jusqu'à 30.</span></li>
       </ul>
     </section>
 
     <section class="land-sec">
-      <h2 class="land-h">Après le résultat</h2>
+      <h2 class="land-h"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-chart"/></svg>Après le résultat</h2>
       <ul class="uses">
-        <li>Ta <b>signature</b>, un <b>radar</b> et un <b>classement</b> avec le repère du hasard.</li>
-        <li>Une <b>synthèse</b> avec le <b>tampon</b> de ton archétype et la <b>fiche</b> de tes deux profils types.</li>
-        <li>Un <b>rapport PDF</b> d'une page, avec points forts et points à travailler.</li>
-        <li><b>Partager</b> en image, <b>copier</b> le résumé ou l'<b>envoyer par e-mail</b>.</li>
-        <li>Un <b>historique</b> de tes résultats, gardé sur ton appareil.</li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-radar"/></svg><span>Ta <b>signature</b>, un <b>radar</b> et un <b>classement</b> avec le repère du hasard.</span></li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-stamp"/></svg><span>Une <b>synthèse</b> avec le <b>tampon</b> de ton archétype et la <b>fiche</b> de tes deux profils types.</span></li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-doc"/></svg><span>Un <b>rapport PDF</b> d'une page, avec points forts et points à travailler.</span></li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-share"/></svg><span><b>Partager</b> en image, <b>copier</b> le résumé ou l'<b>envoyer par e-mail</b>.</span></li>
+        <li><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-history"/></svg><span>Un <b>historique</b> de tes résultats, gardé sur ton appareil.</span></li>
       </ul>
     </section>
 
-    <section class="land-sec land-end">
-      <p class="land-p muted">Outil de réflexion personnelle, pas un diagnostic psychologique. Rien ne quitte ton téléphone : pas de compte, et l'application fonctionne hors-ligne.</p>
+    <section class="land-sec paper land-end">
+      <p class="land-p muted with-ico center"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-shield"/></svg><span>Outil de réflexion personnelle, pas un diagnostic psychologique. Rien ne quitte ton téléphone : pas de compte, et l'application fonctionne hors-ligne.</span></p>
       <button class="btn-primary" onclick="goHome()">Commencer</button>
     </section>
   </div>
@@ -657,7 +712,7 @@
 
     <p class="lead">Des mises en situation pour te lire de plus près. Rien ne quitte ton téléphone.</p>
 
-    <div class="card">
+    <div class="card paper">
       <h2 class="card-title">Combien de questions ?</h2>
       <div class="len-grid" id="lenGrid">
         <button class="len-btn" data-len="10" onclick="setLength(10)">
@@ -722,7 +777,7 @@
       </div>
     </div>
 
-    <div class="card settings hidden" id="historyCard">
+    <div class="card settings paper hidden" id="historyCard">
       <details class="disclosure">
         <summary><span class="row-label">Historique</span><span class="row-value num" id="historyCount"></span></summary>
         <div id="historyList"></div>
@@ -771,7 +826,7 @@
       <button class="btn-secondary" id="refineBtn" onclick="refineSession()" style="margin-top:0">Affiner</button>
     </div>
 
-    <div class="card">
+    <div class="card paper">
       <h2 class="card-title">Ta signature</h2>
       <div class="radar-paper"><canvas id="radarCanvas" width="360" height="360" role="img" aria-label="Radar de ton profil"></canvas></div>
     </div>
@@ -781,7 +836,7 @@
       <div id="synthText"></div>
     </div>
 
-    <div class="card" id="typesCard">
+    <div class="card paper" id="typesCard">
       <h2 class="card-title">Tes deux profils types</h2>
       <div class="types-row">
         <button class="type-btn" id="typeBtn1" onclick="openFiche(0)"></button>
@@ -812,7 +867,7 @@
       <h2 class="fiche-name" id="ficheName"></h2>
       <p class="fiche-motor" id="ficheMotor"></p>
     </div>
-    <div class="card" id="ficheBody"></div>
+    <div class="card paper" id="ficheBody"></div>
     <button class="btn-primary" onclick="closeFiche()">Retour au résultat</button>
   </div>
 
@@ -821,7 +876,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.12.2';
+const APP_VERSION = 'v0.13.0';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -1425,6 +1480,7 @@ function renderQuestion() {
   document.getElementById('qModeBadge').textContent = q.m;
   document.getElementById('qText').textContent = q.q;
   const qCard = document.getElementById('qCard');
+  qCard.classList.toggle('paper', state.idx % 2 === 1);   // alternance crème / bleu nuit d'une question à l'autre
   qCard.classList.remove('enter');
   void qCard.offsetWidth;
   qCard.classList.add('enter');
@@ -1627,7 +1683,7 @@ function renderResults(r) {
   [0, 1].forEach(i => {
     const k = order[i];
     document.getElementById('typeBtn' + (i + 1)).innerHTML =
-      `<span class="type-stamp">${stampSvg(k, meta[k].full, 64, { color: archColor(k) })}</span><span class="type-name">${meta[k].full}</span><span class="type-sub">Voir la fiche</span>`;
+      `<span class="type-stamp">${stampSvg(k, meta[k].full, 64, { color: archColor(k, true) })}</span><span class="type-name">${meta[k].full}</span><span class="type-sub">Voir la fiche</span>`;
   });
   buildSynthesis(meta, order, adj, r.answeredCount, strength).forEach((txt, i) => {
     const p = document.createElement('p');

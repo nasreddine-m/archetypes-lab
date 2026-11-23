@@ -245,6 +245,16 @@ const streamAt = pdfBuf.indexOf('stream\n', pdfBuf.indexOf('/Subtype /Image')) +
 ok(/\/Length 60 /.test(pdfTxt) && pdfBuf.subarray(streamAt, streamAt + 60).equals(Buffer.from(fake)) && /Filter \/DCTDecode/.test(pdfTxt) && /Title <FEFF/.test(pdfTxt), 'PDF : image JPEG intacte, longueur exacte, titre encodé en UTF-16');
 const repPromise = ctx.drawRep(rrr);
 
+// 4i. Alternance crème / bleu nuit et icônes
+{
+  const ids = [...html.matchAll(/<symbol id="(i-[a-z]+)"/g)].map(m => m[1]);
+  const used = [...html.matchAll(/<use href="#(i-[a-z]+)"/g)].map(m => m[1]);
+  ok(ids.length >= 18 && used.length >= 15 && used.every(u => ids.includes(u)), 'icônes : chaque icône utilisée existe dans le sprite (' + used.length + ' emplois, ' + ids.length + ' icônes)');
+  const bands = [...landingHtml.matchAll(/<section class="land-sec( paper)?/g)].map(m => !!m[1]);
+  ok(bands.length === 5 && bands.every((p, i) => i === 0 ? p : p !== bands[i - 1]), 'accueil : les bandes alternent crème et bleu nuit');
+  ok(/\.paper \{[^}]*--text: #1c2846/.test(html) && /class="card paper"/.test(html) && /classList\.toggle\('paper', state\.idx % 2 === 1\)/.test(html), 'alternance : surfaces crème sur les autres pages et d\'une question à l\'autre');
+}
+
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));

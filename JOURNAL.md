@@ -16,6 +16,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.8.0 | 2026-11-23 | Tutoiement | Tout le contenu passe au **tutoiement** (200 questions, synthèse, interface), choix de l'auteur pour un public jeune ; charte et contrôle automatique inversés |
 | v0.9.0 | 2026-11-23 | Affinage visuel | Même identité (bleu nuit et or), interface plus claire : accueil simplifié, mode replié, question sans surtitre, résultats à barres, radar sans étiquettes coupées, états de focus, animation discrète, zoom autorisé ; « Déesses » devient « Princesses » dans l'intitulé |
 | v0.10.0 | 2026-11-23 | Suite | Les quatre améliorations : historique local, partage (carte image + texte), « Affiner » (+10 questions sur la même session), seuils de force du profil calibrés sur des réponses au hasard |
+| v0.13.0 | 2026-11-23 | Alternance et icônes | Bandes crème / bleu nuit sur toutes les pages, petites icônes sur l'accueil ; mode clair reporté |
 | v0.12.2 | 2026-11-23 | Vocabulaire | « Six façons de jouer » devient « Six façons de participer » (le vocabulaire de jeu est évité dans l'interface) |
 | v0.12.1 | 2026-11-23 | Finitions | Radar sur panneau crème (comme le rapport PDF), polices moins lourdes |
 | v0.12.0 | 2026-11-23 | Accueil et rapport | Page d'accueil de concept (illustration, modes expliqués), bouton Accueil partout, palette élargie de 12 teintes, rapport PDF d'une page |
@@ -30,6 +31,11 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 ---
 
 ## Journal des versions et modifications
+
+### v0.13.0 — 2026-11-23 — Alternance crème / bleu nuit et icônes
+**Surfaces crème.** Une classe `.paper` redéfinit localement les variables de couleur (fond crème #fbf8f3, texte et accent bleu nuit, sable sur les boutons, teintes d'archétypes en version « papier »). Tout le CSS existant s'adapte sans règle en plus. Accueil : 5 bandes pleine largeur qui alternent (hero bleu, concept crème, univers bleu, façons de participer crème, résultat bleu, fin crème). Réglages : cartes « Combien de questions ? » et historique en crème. Question : la carte alterne crème / bleu d'une question à l'autre. Résultats : signature et profils types en crème, résumé et classement en bleu. Fiche : le texte en crème.
+**Icônes.** 18 icônes dessinées (trait), regroupées dans un sprite SVG et placées devant les titres de section, les modes, les usages et les contenus du résultat. Pas d'émoji.
+**Mode clair : reporté** (A40).
 
 ### v0.12.1 — 2026-11-23 — Finitions demandées après essai du PDF
 **Radar sur fond clair.** Le radar des résultats est posé sur un panneau crème (#fbf8f3, même papier que le rapport PDF) avec les couleurs « papier » de l'archétype dominant ; un fond blanc pur aurait été trop dur sur le bleu nuit. **Polices moins chargées.** Les titres en graisse 800 passent à 600 (accueil, fiches, longueurs) et à 700 sur la carte de partage et le PDF.
@@ -240,6 +246,7 @@ Question de l'auteur : quel est le nombre idéal de questions ? Simulation avec 
 | A37 | 2026-11-23 | Couleurs d'archétypes toujours accompagnées du nom ou d'une icône | Certaines paires restent proches pour le daltonisme (voir docs/palette-check.txt) | Couleur seule |
 | A38 | 2026-11-23 | Accueil affiché à chaque ouverture | Demande explicite d'une page d'accueil ; un bouton « Commencer » mène aux réglages | Mémoriser « déjà vu » pour ouvrir directement les réglages |
 | A39 | 2026-11-23 | Garder « archétype » comme mot unique ; ne pas renommer les figures du monde 12 en « princes » | Mot genré pour des figures mixtes, certaines figures ne sont pas des princes (Bouffon, Souverain), chantier large (accueil, fiches, synthèses, PDF, tests) | « Les 12 Princes » en simple étiquette d'onglet |
+| A40 | 2026-11-23 | Mode clair reporté ; l'alternance crème / bleu nuit est livrée d'abord | Demande de l'auteur : « si difficile, le laisser de côté ». La classe .paper pose les bases (variables locales) | Choix Auto / Clair / Sombre : thème clair complet, versions papier des couleurs d'archétypes pour les tampons et barres, couleur de la barre du navigateur |
 | A35 | 2026-11-23 | « Adoucir, tons plus clairs » = éclaircir la palette sombre existante, pas ajouter un mode clair | Reste dans le style d'origine (A26) ; un mode clair serait un chantier à part | Thème clair complet (à proposer si c'était l'intention) |
 | A9 | 2026-11-23 | Ne pas rééquilibrer la banque dans la v0.2.0 | Rééquilibrer demande de réécrire des dizaines d'options et de les relire une à une : c'est un chantier de contenu à part (backlog 2) | Tout corriger d'un coup : version trop large, régression difficile à isoler |
 
