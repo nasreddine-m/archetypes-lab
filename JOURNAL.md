@@ -11,16 +11,47 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.3.0 | 2026-11-23 | PWA | Installable (manifeste, icônes, écran d'accueil iOS, bouton Installer Chrome), hors-ligne via service worker, version affichée |
 | v0.4.0 | 2026-11-23 | Banque (publiée sur `main` pour test par l'auteur, relecture en cours) | 100 questions par univers (50 → 100), options rééquilibrées : rapport max/min des poids 3,68 → 1,24 (monde 12) et 1,61 → 1,12 (monde 7) |
 | v0.5.0 | 2026-11-23 | Synthèse | Paragraphe de synthèse du profil sous le radar (portrait en 3 paragraphes : moteur, nuance, relations, ombre, piste, archétypes les moins mobilisés) |
+| v0.6.0 | 2026-11-23 | Style | Style unifié sur la voix des questions d'origine (charte `docs/STYLE.md`) : vouvoiement partout, plus de « Je… », options de ≈ 10 mots ; contrôle automatique |
 
 **État actuel :** PWA statique (`index.html` + `manifest.json` + `sw.js` + `icons/`), 2 univers de 100 questions (12 Archétypes, 7 Déesses), 6 modes de tirage, radar canvas, synthèse du profil, comparaison Duo. Le biais de scoring et de banque est faible (v0.4.0 : rapport max/min des poids 1,24 et 1,12). Tests réels (2026-11-23) : iPhone (Safari) OK — installation, ouverture, hors-ligne en mode avion ; Windows OK après une erreur DNS passagère (`DNS_PROBE_FINISHED_NXDOMAIN`, résolue en relançant, aucun défaut dans l'app). Installation depuis Chrome (icône « Installer ») et hors-ligne sur Windows non encore confirmés.
 
-**Prochaines étapes (suggestions de l'auteur après test de la v0.4.0) :** (1) unifier le style des 200 questions (backlog 7) ; (2) passer à 6 options par question dont 4 tirées au hasard à chaque session (backlog 8).
+**Prochaines étapes :** (1) permettre de choisir la longueur de la session, 20 questions par défaut (backlog 9, justifié par `docs/session-length-v0.5.0.txt`) ; (2) bibliothèque de 6 options dont 4 tirées : **reportée** par l'auteur, on reste à 4 options pour le moment (backlog 8, décision A17).
 
 **Procédure de release :** modifier `APP_VERSION` (index.html) et `CACHE_VERSION` (sw.js) avec la même valeur, lancer `node tools/smoke.js`, commit, push. Sans changement de version, les téléphones gardent l'ancienne version en cache.
 
 ---
 
 ## Journal des versions et modifications
+
+### v0.6.0 — 2026-11-23 — Unification du style
+- **Suggestion de l'auteur** : « unifier le style des questions : le style des nouvelles questions est bien identifiable ». Décision : on aligne les 100 questions ajoutées sur la voix des 100 questions d'origine (A18). Charte écrite dans `docs/STYLE.md`.
+- **100 questions réécrites (ids 51-100, deux univers)** : textes seulement. Pour chaque option, l'ordre et les archétypes principal/secondaire sont inchangés ; les poids de la banque sont identiques avant et après (`tools/pools.js`, comparaison exacte).
+- **Questions d'origine Q5 à Q10 du monde 12 : passées du tutoiement au vouvoiement** (seuls les pronoms ont changé, 11 remplacements). C'est la seule modification de questions d'origine de cette version.
+- `tools/style-check.js` : contrôle de la charte (tutoiement, première personne, longueur, écarts de longueur entre options). Détection du tutoiement fiabilisée pour les lettres accentuées (une première version prenait « tête » ou « fête » pour « te »). Intégré à `tools/smoke.js`, avec validation de la structure des deux banques.
+- `tools/apply-restyle.js` + `docs/drafts/restyle.js` : outil et données de la réécriture ; `docs/revue-questions.md` régénéré.
+
+| Mesure | Avant | Après |
+|---|---|---|
+| Monde 12 : mots par option (origine 10,0) | 12,7 | **10,5** |
+| Monde 7 : mots par option (origine 10,2) | 13,1 | **11,3** |
+| Options en « Je… » (origine 0 %) | 13 % / 16 % | **0 %** |
+| Énoncés tutoyés | 14 % (monde 12) | **0 %** |
+| Contrôle automatique de la charte | 143 points à revoir | **0** |
+
+**Limite :** le style est mesuré sur des critères formels (longueur, personne, forme). L'impression de voix commune reste un jugement : à valider par l'auteur en testant.
+
+### Étude de la longueur de session (2026-11-23, `tools/session-length.js`, résultats dans `docs/session-length-v0.5.0.txt`)
+Question de l'auteur : quel est le nombre idéal de questions ? Simulation avec le vrai code de scoring : un répondant a un profil « vrai » (deux archétypes) et choisit l'option correspondante avec une probabilité p (0,5 = signal faible, 0,7 = signal fort), sinon au hasard. 3 000 répondants par cellule.
+
+| Questions | Monde 12 : n° 1 retrouvé (p=0,5 / 0,7) | Monde 12 : vrai profil dans le top 2 | Monde 12 : test-retest du n° 1 | Monde 7 : n° 1 retrouvé (p=0,5 / 0,7) |
+|---|---|---|---|---|
+| 10 (actuel) | 38 % / 52 % | 58 % / 74 % | 23 % / 35 % | 65 % / 78 % |
+| 15 | 46 % / 61 % | 67 % / 84 % | 31 % / 49 % | 75 % / 84 % |
+| 20 | 53 % / 67 % | 76 % / 90 % | 37 % / 56 % | 79 % / 88 % |
+| 30 | 62 % / 73 % | 85 % / 96 % | 51 % / 67 % | 85 % / 91 % |
+| 50 | 71 % / 79 % | 95 % / 99 % | 61 % / 74 % | 90 % / 94 % |
+
+**Lecture :** (1) à 10 questions, avec 12 archétypes, l'archétype n° 1 n'est retrouvé que dans environ 4 cas sur 10 à 5 cas sur 10 ; l'ensemble « n° 1 + n° 2 » est nettement plus fiable. (2) Les gains ralentissent après 30 questions (≈ +5 points pour 20 questions de plus). (3) Le monde 7 (7 archétypes) est plus facile : 15 à 20 questions suffisent. **Recommandation : 20 questions par défaut (≈ 4 à 5 minutes), 10 comme « aperçu » et 30 pour « approfondi » dans le monde 12.** Limites : modèle de répondant cohérent et idéalisé (les vraies personnes sont plus bruitées), fatigue non modélisée.
 
 ### v0.5.0 — 2026-11-23 — Synthèse du profil
 - **Suggestion de l'auteur** : « donner après la représentation en radar un paragraphe de synthèse sur le profil ».
@@ -107,6 +138,9 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | A14 | 2026-11-23 | Les 50 questions d'origine restent **inchangées** ; seul le complément est équilibré | Traçabilité, pas de régression sur du contenu existant, comparaison avant/après propre | Réécrire les anciennes options pour corriger le biais |
 | A15 | 2026-11-23 | Nouveaux arbitrages formulés « Que préserve-t-il coûte que coûte ? » (choix positif) au lieu de « Renoncer à… » | Avec « renoncer », l'archétype noté était celui qui tient le moins à la chose abandonnée : logique inversée, source d'erreur de lecture pour l'utilisateur | Garder la logique inversée des questions d'origine |
 | A16 | 2026-11-23 | Version v0.4.0 d'abord sur la branche `v0.4-banque`, puis publiée sur `main` quand l'auteur a demandé à la tester sur lui-même (retour arrière : `git revert` du merge) | Contenu psychologique : seul l'auteur de l'app peut juger si une option représente bien l'archétype. GitHub Pages ne sert que `main` | Publier directement et corriger ensuite |
+| A17 | 2026-11-23 | **Rester à 4 options par question** pour le moment (idée de l'auteur : bibliothèque de 6 options dont 4 tirées) | Décision de l'auteur. Elle reste ouverte : le code de scoring la supporterait (l'exposition se calcule sur les options affichées), mais cela demande 400 rédactions et augmente un peu la variabilité entre sessions | Passer à 6 options maintenant |
+| A18 | 2026-11-23 | Unifier le style en **alignant les nouvelles questions sur les questions d'origine** | Les questions d'origine sont la voix de l'auteur ; c'est lui qui a repéré les nouvelles comme étrangères. Mesure : 0 % de « Je » à l'origine contre 13-16 % dans les nouvelles ; options plus longues de 27 % | Aligner les anciennes sur les nouvelles : change du contenu validé |
+| A19 | 2026-11-23 | Recommander **20 questions par défaut** (aperçu 10, approfondi 30) | Simulation de fiabilité (`docs/session-length-v0.5.0.txt`) : à 10 questions le n° 1 du monde 12 n'est retrouvé que 38-52 % du temps ; rendements décroissants après 30 | Rester à 10 : résultat trop instable ; 50 : lassitude pour un gain d'environ 5 points |
 | A9 | 2026-11-23 | Ne pas rééquilibrer la banque dans la v0.2.0 | Rééquilibrer demande de réécrire des dizaines d'options et de les relire une à une : c'est un chantier de contenu à part (backlog 2) | Tout corriger d'un coup : version trop large, régression difficile à isoler |
 
 ---
@@ -123,8 +157,9 @@ Source : `docs/balance-baseline.txt` (`node tools/balance.js`).
 
 ## Backlog priorisé
 
-7. **Unifier le style des questions** (suggestion de l'auteur : « le style des nouvelles questions est bien identifiable »). Écarts mesurés entre les questions d'origine (id ≤ 50) et les nouvelles (id > 50) : options plus longues (monde 12 : 10,0 → 12,7 mots ; monde 7 : 10,2 → 13,1), **aucune** option d'origine à la première personne (« Je... ») contre 13 % et 16 % des nouvelles, plus d'options entre guillemets dans le monde 7 (2 % → 6 %), et 14 % des énoncés d'origine du monde 12 tutoient alors que tout le reste vouvoie. Charte proposée : options de 8 à 12 mots, sans « Je » (infinitif ou groupe nominal en Déclaratif, « Il/Elle + présent » en Observation), formes parallèles au sein d'une question, vouvoiement partout, registre sobre des questions d'origine. Direction proposée : aligner les nouvelles questions sur les anciennes (voix d'origine de l'auteur).
-8. **Bibliothèque de 6 options par question, 4 tirées au hasard** (suggestion de l'auteur). À prévoir : 2 options supplémentaires pour chacune des 200 questions (400 rédactions) avec 6 archétypes principaux distincts ; `computeExposure` calculée sur les 4 options **réellement affichées** (déjà compatible si on lui passe la version tirée) ; tirage sans doublon ; outils de mesure (`balance.js`, `pools.js`, `merge-bank.js`) à adapter pour 6 options. Avantages : moins de mémorisation entre sessions, moins d'effet de position et de biais d'option. Inconvénient : un peu plus de variabilité entre deux sessions d'une même personne (chaque option a 2 chances sur 3 d'apparaître).
+7. ~~**Unifier le style des questions**~~ (fait en v0.6.0, voir A18 et `docs/STYLE.md`) — (suggestion de l'auteur : « le style des nouvelles questions est bien identifiable »). Écarts mesurés entre les questions d'origine (id ≤ 50) et les nouvelles (id > 50) : options plus longues (monde 12 : 10,0 → 12,7 mots ; monde 7 : 10,2 → 13,1), **aucune** option d'origine à la première personne (« Je... ») contre 13 % et 16 % des nouvelles, plus d'options entre guillemets dans le monde 7 (2 % → 6 %), et 14 % des énoncés d'origine du monde 12 tutoient alors que tout le reste vouvoie. Charte proposée : options de 8 à 12 mots, sans « Je » (infinitif ou groupe nominal en Déclaratif, « Il/Elle + présent » en Observation), formes parallèles au sein d'une question, vouvoiement partout, registre sobre des questions d'origine. Direction proposée : aligner les nouvelles questions sur les anciennes (voix d'origine de l'auteur).
+9. **Longueur de session réglable** : 10 (aperçu) / 20 (par défaut) / 30 (approfondi). Le « 10 » est codé en dur à plusieurs endroits de `index.html` (compteur, barre de progression, fin de session) et dans `drawQuestions`. À rendre variable ; vérifier la taille des pools (mode Miroir : 22 et 21 questions, donc 30 impossible dans ce mode sans réutiliser des questions) ; texte de synthèse déjà paramétré par le nombre de réponses.
+8. **(Reporté par l'auteur : on reste à 4 options pour le moment — A17.)** **Bibliothèque de 6 options par question, 4 tirées au hasard** (suggestion de l'auteur). À prévoir : 2 options supplémentaires pour chacune des 200 questions (400 rédactions) avec 6 archétypes principaux distincts ; `computeExposure` calculée sur les 4 options **réellement affichées** (déjà compatible si on lui passe la version tirée) ; tirage sans doublon ; outils de mesure (`balance.js`, `pools.js`, `merge-bank.js`) à adapter pour 6 options. Avantages : moins de mémorisation entre sessions, moins d'effet de position et de biais d'option. Inconvénient : un peu plus de variabilité entre deux sessions d'une même personne (chaque option a 2 chances sur 3 d'apparaître).
 
 1. ~~**Scoring (v0.2.0)**~~ : fait.
 2. ~~**Banque**~~ : fait en v0.4.0 (reste à relire et publier). Pistes restantes : rééquilibrer le pool Dilemmes du monde 12 ; neutraliser le genre du monde 7. Initialement : rééquilibrer les options (plus de choix primaires Innocent, Amoureux, Bouffon, Homme ordinaire, Héra, Perséphone) ; ≥ 15 questions éligibles par mode (Miroir Social du monde 12 : 10 seulement) ; neutraliser le genre du monde 7 ou l'assumer. Objectif chiffré : rapport max/min des poids < 1,3 et part en tête d'un répondant au hasard entre 6 % et 11 % dans le monde 12.

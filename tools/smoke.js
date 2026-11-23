@@ -113,5 +113,16 @@ const shellBlock = sw.match(/const SHELL = \[([\s\S]*?)\];/)[1];
 const shell = [...shellBlock.matchAll(/'\.\/([^']*)'/g)].map(m => m[1] || 'index.html');
 shell.forEach(f => ok(fs.existsSync(path.join(root, f)), `SHELL : ${f} existe`));
 
+// 6. Banque de questions : structure et charte de style
+const cp = require('child_process');
+const style = cp.spawnSync('node', [path.join(__dirname, 'style-check.js')], { encoding: 'utf8' });
+ok(style.status === 0, 'charte de style respectée (tools/style-check.js)' + (style.status ? '\n' + style.stdout : ''));
+for (const w of ['12', '7']) {
+  const keys = Object.keys(w === '12' ? ctx.M12 : ctx.M7);
+  const bank = vm.runInContext('BANK_' + w, ctx);
+  const bad = bank.filter(q => q.o.length !== 4 || new Set(q.o.map(o => o[1])).size !== 4 || q.o.some(o => o[1] === o[2] || !keys.includes(o[1]) || !keys.includes(o[2])));
+  ok(bank.length === 100 && bad.length === 0 && new Set(bank.map(q => q.id)).size === 100, `monde ${w} : 100 questions valides (4 options, principaux distincts, ids uniques)`);
+}
+
 console.log(fail ? `\n${fail} ÉCHEC(S)` : '\nTous les tests passent');
 process.exit(fail ? 1 : 0);
