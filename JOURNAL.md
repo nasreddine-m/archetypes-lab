@@ -16,6 +16,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.8.0 | 2026-11-23 | Tutoiement | Tout le contenu passe au **tutoiement** (200 questions, synthèse, interface), choix de l'auteur pour un public jeune ; charte et contrôle automatique inversés |
 | v0.9.0 | 2026-11-23 | Affinage visuel | Même identité (bleu nuit et or), interface plus claire : accueil simplifié, mode replié, question sans surtitre, résultats à barres, radar sans étiquettes coupées, états de focus, animation discrète, zoom autorisé ; « Déesses » devient « Princesses » dans l'intitulé |
 | v0.10.0 | 2026-11-23 | Suite | Les quatre améliorations : historique local, partage (carte image + texte), « Affiner » (+10 questions sur la même session), seuils de force du profil calibrés sur des réponses au hasard |
+| v0.12.1 | 2026-11-23 | Finitions | Radar sur panneau crème (comme le rapport PDF), polices moins lourdes |
 | v0.12.0 | 2026-11-23 | Accueil et rapport | Page d'accueil de concept (illustration, modes expliqués), bouton Accueil partout, palette élargie de 12 teintes, rapport PDF d'une page |
 | v0.11.0 | 2026-11-23 | Cinq demandes | Palette plus claire et douce, figures associées (repères culturels sourcés), tampon d'archétype à côté de la synthèse, fiches des profils types, envoi par e-mail |
 
@@ -28,6 +29,9 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 ---
 
 ## Journal des versions et modifications
+
+### v0.12.1 — 2026-11-23 — Finitions demandées après essai du PDF
+**Radar sur fond clair.** Le radar des résultats est posé sur un panneau crème (#fbf8f3, même papier que le rapport PDF) avec les couleurs « papier » de l'archétype dominant ; un fond blanc pur aurait été trop dur sur le bleu nuit. **Polices moins chargées.** Les titres en graisse 800 passent à 600 (accueil, fiches, longueurs) et à 700 sur la carte de partage et le PDF.
 
 ### v0.12.0 — 2026-11-23 — Page d'accueil, palette élargie, rapport PDF
 **1. Page d'accueil.** Affichée au démarrage : illustration (les 12 archétypes en couronne autour d'un profil qui « respire », animation coupée si l'utilisateur réduit les animations), explication du concept en 3 étapes, les deux univers (cartes qui ouvrent directement les réglages), les six modes, les trois longueurs, les usages (se découvrir, décrire quelqu'un, Duo, affiner), ce que contient le résultat, mention « pas un diagnostic » et « rien ne quitte ton téléphone ». C'est le contenu de l'explication des modes donnée en conversation.

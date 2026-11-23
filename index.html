@@ -169,7 +169,7 @@
   .len-btn.active { border-color: var(--accent); background: var(--accent-soft); }
   .len-btn:disabled { opacity: 0.45; cursor: default; }
   .len-btn:disabled:hover { border-color: var(--border); }
-  .len-num { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .len-num { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.1; }
   .len-name { font-size: 14px; font-weight: 700; margin-top: 2px; }
   .len-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .len-note { font-size: 13px; color: var(--muted); margin-top: 12px; line-height: 1.45; }
@@ -391,7 +391,7 @@
     margin-bottom: 16px;
   }
   .hero-sub { font-size: 14px; color: var(--accent); font-weight: 600; }
-  .hero-title { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.15; margin: 8px 0; text-wrap: balance; }
+  .hero-title { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; line-height: 1.15; margin: 8px 0; text-wrap: balance; }
   .hero-meta { font-size: 15px; color: var(--muted); line-height: 1.5; }
   .hero-meta strong { color: var(--text); }
   canvas { width: 100% !important; max-width: 360px; height: auto !important; display: block; margin: 0 auto; }
@@ -461,7 +461,7 @@
   .rank-item[role="button"]:hover { background: var(--accent-soft); }
   .fiche-head { text-align: center; }
   .fiche-stamp { width: 150px; height: 150px; margin: 4px auto 14px; color: var(--accent); transform: rotate(-8deg); }
-  .fiche-name { font-size: 26px; font-weight: 800; letter-spacing: -0.4px; margin: 0 0 6px; }
+  .fiche-name { font-size: 26px; font-weight: 600; letter-spacing: -0.4px; margin: 0 0 6px; }
   .fiche-motor { font-size: 16px; color: var(--muted); margin: 0; line-height: 1.5; }
   .fiche-h { font-size: 15px; font-weight: 700; color: var(--accent); margin: 18px 0 4px; }
   .fiche-h:first-child { margin-top: 0; }
@@ -494,22 +494,24 @@
   .home-btn svg { display: block; flex: none; }
 
   /* Page d'accueil */
+  .radar-paper { background: #fbf8f3; border-radius: 18px; padding: 10px; max-width: 400px; margin: 0 auto; box-shadow: 0 6px 18px rgba(0,0,0,0.22); }
+  .radar-paper canvas { display: block; width: 100%; height: auto; }
   .land-hero { text-align: center; padding: 4px 0 28px; }
   .orb { width: min(82vw, 340px); margin: 0 auto 18px; }
   .orb svg { display: block; width: 100%; height: auto; }
   .orb .core { transform-origin: 160px 160px; animation: breathe 6s ease-in-out infinite; }
   @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
-  .land-title { font-size: 34px; font-weight: 800; letter-spacing: -0.8px; line-height: 1.1; margin: 0 0 12px; text-wrap: balance; }
+  .land-title { font-size: 34px; font-weight: 600; letter-spacing: -0.8px; line-height: 1.1; margin: 0 0 12px; text-wrap: balance; }
   .land-lead { font-size: 17px; line-height: 1.5; color: var(--muted); margin: 0 auto 22px; max-width: 34ch; text-wrap: balance; }
   .land-hero .btn-primary { max-width: 360px; }
   .land-sec { padding: 26px 0; border-top: 1px solid var(--border); }
-  .land-h { font-size: 24px; font-weight: 800; letter-spacing: -0.4px; margin: 0 0 12px; }
+  .land-h { font-size: 24px; font-weight: 600; letter-spacing: -0.4px; margin: 0 0 12px; }
   .land-h3 { font-size: 17px; font-weight: 700; margin: 22px 0 8px; }
   .land-p { font-size: 16px; line-height: 1.6; margin: 0 0 12px; max-width: 62ch; }
   .land-p.muted { color: var(--muted); font-size: 15px; }
   .steps { margin-top: 18px; }
   .step { display: flex; gap: 18px; padding: 16px 0; border-top: 1px solid var(--border); }
-  .step-num { flex: none; width: 44px; font-size: 40px; font-weight: 800; line-height: 1; color: var(--c); font-variant-numeric: tabular-nums; }
+  .step-num { flex: none; width: 44px; font-size: 40px; font-weight: 600; line-height: 1; color: var(--c); font-variant-numeric: tabular-nums; }
   .step h3 { font-size: 18px; font-weight: 700; margin: 0 0 4px; color: var(--c); }
   .step p { font-size: 15px; line-height: 1.55; margin: 0; color: var(--text); }
   .uni-grid { display: grid; gap: 14px; }
@@ -526,7 +528,7 @@
   }
   .uni-card:hover { border-color: var(--text); }
   .uni-card:active { transform: scale(0.99); }
-  .uni-card h3 { font-size: 20px; font-weight: 800; margin: 12px 0 4px; }
+  .uni-card h3 { font-size: 20px; font-weight: 600; margin: 12px 0 4px; }
   .uni-card p { font-size: 15px; line-height: 1.5; margin: 0 0 12px; color: var(--text); }
   .uni-go { font-size: 14px; font-weight: 700; color: var(--c); }
   .dots { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -771,7 +773,7 @@
 
     <div class="card">
       <h2 class="card-title">Ta signature</h2>
-      <canvas id="radarCanvas" width="360" height="360" role="img" aria-label="Radar de ton profil"></canvas>
+      <div class="radar-paper"><canvas id="radarCanvas" width="360" height="360" role="img" aria-label="Radar de ton profil"></canvas></div>
     </div>
 
     <div class="card" id="synthCard">
@@ -819,7 +821,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.12.0';
+const APP_VERSION = 'v0.12.1';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -1612,7 +1614,9 @@ function renderResults(r) {
     listEl.appendChild(row);
   });
 
-  drawRadar(keys, adj, (!r.fromHistory && state.duoSaved) ? state.duoSaved.scores : null);
+  const radarAccent = archColor(r.order[0], true);
+  drawRadar(keys, adj, (!r.fromHistory && state.duoSaved) ? state.duoSaved.scores : null, null, null,
+    { accent: radarAccent, accent2: radarAccent === '#554d9d' ? '#b55558' : '#554d9d', ring: 'rgba(28,40,70,0.2)', text: PAPER.text });
 
   const synthEl = document.getElementById('synthText');
   synthEl.innerHTML = '';
@@ -1810,7 +1814,7 @@ function drawShareCard(r) {
   ctx.fillStyle = muted; ctx.font = font(500, 32); ctx.fillText(`${r.subject} • ${r.modeLabel}`, 110, 206);
 
   ctx.textAlign = 'center';
-  ctx.fillStyle = accent; ctx.font = font(800, 88); ctx.fillText(meta[a].full, W / 2, 330);
+  ctx.fillStyle = accent; ctx.font = font(700, 88); ctx.fillText(meta[a].full, W / 2, 330);
   ctx.fillStyle = text; ctx.font = font(700, 56); ctx.fillText(`et ${inSentence(meta[b].full)}`, W / 2, 400);
 
   const rc = document.createElement('canvas');
@@ -2106,14 +2110,14 @@ async function drawReport(r) {
 
   // Bandeau
   ctx.fillStyle = PAPER.navy; ctx.fillRect(0, 0, 210, 30);
-  text('Archétypes Lab', 14, 15.5, 8.2, PAPER.sand, 800);
+  text('Archétypes Lab', 14, 15.5, 8.2, PAPER.sand, 700);
   text('Rapport de profil', 14, 23, 4, '#b4c0d6', 500);
   text(c.subject, 196, 14, 4.4, '#ffffff', 700, 'right');
   text(`${c.modeLabel} · ${c.answered} questions`, 196, 20, 3.4, '#b4c0d6', 500, 'right');
   text(c.date, 196, 25.5, 3.4, '#b4c0d6', 500, 'right');
 
   // Signature et tampon
-  text(meta[a].full, 14, 49, 11, archColor(a, true), 800);
+  text(meta[a].full, 14, 49, 11, archColor(a, true), 700);
   text(`et ${inSentence(meta[b].full)}`, 14, 59, 7.2, archColor(b, true), 700);
   para(`Moteur : ${meta[a].motor}`, 14, 67, 128, 3.5, PAPER.muted, 4.6, 2, 500);
   const stamp = await loadSvgImage(stampSvg(a, meta[a].full, 300, { color: archColor(a, true), noFilter: true }));
