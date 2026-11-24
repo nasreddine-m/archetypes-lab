@@ -16,6 +16,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.8.0 | 2026-11-23 | Tutoiement | Tout le contenu passe au **tutoiement** (200 questions, synthèse, interface), choix de l'auteur pour un public jeune ; charte et contrôle automatique inversés |
 | v0.9.0 | 2026-11-23 | Affinage visuel | Même identité (bleu nuit et or), interface plus claire : accueil simplifié, mode replié, question sans surtitre, résultats à barres, radar sans étiquettes coupées, états de focus, animation discrète, zoom autorisé ; « Déesses » devient « Princesses » dans l'intitulé |
 | v0.10.0 | 2026-11-23 | Suite | Les quatre améliorations : historique local, partage (carte image + texte), « Affiner » (+10 questions sur la même session), seuils de force du profil calibrés sur des réponses au hasard |
+| v0.14.1 | 2026-11-24 | Textes de synthèse | Profil peu contrasté : formulations plus humaines (3 variantes), plus de mention du hasard dans le texte ; élision corrigée (« d'analyser ») |
 | v0.14.0 | 2026-11-24 | Nouveau design | Design « carnet moderne » adopté après essai en variante : filets, angles droits, boutons rectangulaires, police sans-serif serrée, palette Nuit verte et abricot, nouvelles icônes (rosace) |
 | v0.13.3 | 2026-11-23 | Questions stables | Fin de l'alternance crème / bleu nuit d'une question à l'autre : la carte de question reste en bleu nuit pour ne pas distraire |
 | v0.13.2 | 2026-11-23 | Mise à jour fiable | La page est toujours demandée sans cache HTTP (GitHub Pages la garde 10 min), vérification d'une nouvelle version à chaque ouverture, rechargement automatique quand elle est prête |
@@ -35,6 +36,9 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 ---
 
 ## Journal des versions et modifications
+
+### v0.14.1 — 2026-11-24 — Textes de synthèse plus humains
+**Pourquoi la phrase existait.** Répondre au hasard donne toujours un n° 1 (vers 186 sur l'indice avec 20 questions). La v0.3.0 a donc comparé le n° 1 aux sessions aléatoires simulées (75e et 95e centiles) pour ne pas affirmer un profil net quand le signal est faible. **Pourquoi elle a été retirée.** « Ce que des réponses au hasard produisent souvent » était un langage de statisticien, vexant, et faux dans le fond : un profil peu contrasté est souvent un profil équilibré, pas des réponses au hasard. **Maintenant.** Profil peu contrasté : trois formulations (« plutôt équilibré », « aucun archétype ne se détache », « portrait nuancé »), choisies de façon stable pour un même résultat, avec invitation à affiner avant 30 questions. Signal modéré : « tendance à confirmer / sans être tranchée ». La mention du hasard reste uniquement dans la légende technique du classement et dans la ligne de fiabilité du PDF (A44).
 
 ### v0.14.0 — 2026-11-24 — Nouveau design adopté
 **Origine.** Une variante a été essayée en parallèle (dépôt séparé), jugée meilleure par l'auteur, puis promue app principale. Les deux ont été échangées : l'ancienne version (v0.13.3, bleu nuit et sable) est conservée dans le dépôt « variante » (https://nasreddine-m.github.io/archetypes-lab-variante/).
@@ -256,6 +260,7 @@ Question de l'auteur : quel est le nombre idéal de questions ? Simulation avec 
 | A38 | 2026-11-23 | Accueil affiché à chaque ouverture | Demande explicite d'une page d'accueil ; un bouton « Commencer » mène aux réglages | Mémoriser « déjà vu » pour ouvrir directement les réglages |
 | A39 | 2026-11-23 | Garder « archétype » comme mot unique ; ne pas renommer les figures du monde 12 en « princes » | Mot genré pour des figures mixtes, certaines figures ne sont pas des princes (Bouffon, Souverain), chantier large (accueil, fiches, synthèses, PDF, tests) | « Les 12 Princes » en simple étiquette d'onglet |
 | A40 | 2026-11-23 | Mode clair reporté ; l'alternance crème / bleu nuit est livrée d'abord | Demande de l'auteur : « si difficile, le laisser de côté ». La classe .paper pose les bases (variables locales) | Choix Auto / Clair / Sombre : thème clair complet, versions papier des couleurs d'archétypes pour les tampons et barres, couleur de la barre du navigateur |
+| A44 | 2026-11-24 | Garder la détection de profil peu contrasté, mais la formuler comme un équilibre et non comme du hasard | Évite d'affirmer une dominante sans signal, sans suggérer que la personne a répondu au hasard | Supprimer toute prudence (aurait ramené le défaut de la v0.1) |
 | A41 | 2026-11-24 | Même rang = même taille ; l'asymétrie vient de la hiérarchie (grands titres, alignement à gauche, bandes alternées), jamais de décalages | La première variante décalait des blocs et paraissait boguée | Décalages volontaires (rejetés par l'auteur) |
 | A42 | 2026-11-24 | Police système sans-serif plutôt que serif ou police embarquée | Les empattements faisaient vieillot ; une police embarquée ajouterait ~100 Ko par version | Inter embarquée (à reconsidérer) |
 | A43 | 2026-11-24 | Palette « Nuit verte et abricot » remplace bleu nuit et sable ; le thème Princesses garde son violet | Choix de l'auteur après essai | Retour au bleu nuit (conservé dans le dépôt variante) |

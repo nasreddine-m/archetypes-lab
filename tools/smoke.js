@@ -128,7 +128,7 @@ const p12 = ctx.synth(ctx.M12, ['Innocent', 'Sage', ...Object.keys(ctx.M12).filt
 ok(p12.includes("autour de l'Innocent et du Sage"), "accords monde 12 : autour de l'Innocent et du Sage");
 const p7 = ctx.synth(ctx.M7, ['Aphrodite', 'Hestia', ...Object.keys(ctx.M7).filter(k => k !== 'Aphrodite' && k !== 'Hestia')], all(ctx.M7, 200), 10)[0];
 ok(p7.includes("autour d'Aphrodite et d'Hestia"), "accords monde 7 : autour d'Aphrodite et d'Hestia");
-ok(/peu contrasté/.test(flatTxt), 'profil plat : texte « peu contrasté »');
+ok(/dominante nette|se détache vraiment/.test(flatTxt) && !/hasard/.test(flatTxt) && /Quelques questions de plus/.test(flatTxt), 'profil plat : texte « équilibré », sans mention du hasard, avec invitation à affiner');
 
 // 4c. Force du profil : seuils calibrés sur des réponses au hasard
 const t12 = ctx.randTop('12', 10);
@@ -138,7 +138,7 @@ const k12 = Object.keys(ctx.M12), ord12 = ['Sage', 'Magicien', ...k12.filter(k =
 const adjHi = Object.fromEntries(k12.map(k => [k, 80])); adjHi.Sage = 300; adjHi.Magicien = 250;
 const modTxt10 = ctx.synth(ctx.M12, ord12, adjHi, 10, 'moderate').join(' ');
 const modTxt30 = ctx.synth(ctx.M12, ord12, adjHi, 30, 'moderate').join(' ');
-ok(/signal reste modéré : davantage de questions/.test(modTxt10) && /signal reste modéré\./.test(modTxt30) && !/davantage de questions/.test(modTxt30) && !/peu contrasté/.test(modTxt10), 'synthèse « modérée » : invite à affiner avant 30 questions seulement');
+ok(/(à confirmer|fragile) : quelques questions de plus/.test(modTxt10) && /sans être tranchée\./.test(modTxt30) && !/questions de plus/.test(modTxt30) && !/hasard/.test(modTxt10), 'synthèse « modérée » : invite à affiner avant 30 questions seulement');
 
 // 4d. Affiner : continuer la même session avec des questions nouvelles
 const finishAll = () => { while (ctx.S.idx < ctx.S.total) { const q = ctx.S.questions[ctx.S.idx]; ctx.choose(q.o[0][1], q.o[0][2]); } };

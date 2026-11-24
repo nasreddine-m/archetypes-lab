@@ -1002,7 +1002,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.14.0';
+const APP_VERSION = 'v0.14.1';
 
 const META_12 = {
   "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
@@ -1399,17 +1399,25 @@ function buildSynthesis(meta, order, adj, answeredCount, strength = 'clear') {
   const flat = strength === 'flat';
   const tie = adj[k1] === adj[k2];
 
+  // Plusieurs formulations par cas, choisies de façon stable (même résultat = même texte) pour éviter la répétition.
+  const seed = [...(k1 + k2)].reduce((s, c) => s + c.charCodeAt(0), 0) + answeredCount;
+  const pick = list => list[seed % list.length];
+  const deT = t => (/^[aeiouyàâäéèêëîïôöûùüœ]/i.test(t) ? "d'" : "de ") + t;   // "de remettre", "d'analyser"
   let p1;
   if (flat) {
-    p1 = `Tes réponses dessinent un profil peu contrasté : le n° 1 reste dans ce que des réponses au hasard produisent souvent. ` +
-      `Si une dominante apparaît, c'est ${inSentence(n1)}, suivi ${deName(n2)}. Ton moteur serait alors de ${s1.trait}.`;
+    p1 = pick([
+      `Ton profil est plutôt équilibré : plusieurs archétypes ressortent de façon proche, sans dominante nette. Celui qui l'emporte de peu est ${inSentence(n1)}, suivi ${deName(n2)}. Ton moteur serait alors ${deT(s1.trait)}.`,
+      `Aucun archétype ne se détache vraiment chez toi : tes réponses se répartissent entre plusieurs profils. Léger avantage pour ${inSentence(n1)}, puis ${inSentence(n2)}. Si ce profil prenait le dessus, ton moteur serait ${deT(s1.trait)}.`,
+      `Ton portrait est nuancé : tu te reconnais dans plusieurs archétypes à la fois, sans dominante nette. Un léger avantage va ${aName(n1)}, suivi ${deName(n2)} ; ton moteur serait alors ${deT(s1.trait)}.`
+    ]);
+    if (answeredCount < 30) p1 += ' Quelques questions de plus aideraient à départager.';
   } else {
     p1 = `Ton profil s'organise autour ${deName(n1)} et ${deName(n2)}${tie ? " (à égalité, l'ordre est indicatif)" : ''}. ` +
       `Ton moteur dominant : ${s1.trait}. ${n2} y ajoute ${s2.nuance}.`;
     if (strength === 'moderate') {
       p1 += answeredCount < 30
-        ? ' Le signal reste modéré : davantage de questions le confirmeraient.'
-        : ' Le signal reste modéré.';
+        ? ' ' + pick(['Cette tendance est encore à confirmer : quelques questions de plus la préciseraient.', 'Le signal est encore fragile : quelques questions de plus le confirmeraient.'])
+        : ' ' + pick(['Cette tendance se dessine sans être tranchée.', 'La tendance est visible, sans être tranchée.']);
     }
   }
   const p2 = `Dans les relations, ${s1.relation}. Zone d'ombre possible : ${lc(meta[k1].shadow.replace(/\.$/, ''))}. ` +
@@ -2213,7 +2221,7 @@ function startWith(universe) {
 // Le rapport est dessiné sur un canvas A4 (200 dpi, version « papier » de la palette) puis emballé dans un PDF d'une page :
 // pas de bibliothèque externe, fonctionne hors-ligne. Le texte du PDF est une image (non sélectionnable).
 const PAPER = { bg: '#fbf8f3', navy: '#1c2846', text: '#222b45', muted: '#5b6482', line: 'rgba(28,40,70,0.16)', sand: '#ebcfa9' };
-const STRENGTH_LABEL = { flat: 'profil peu contrasté', moderate: 'signal modéré', clear: 'profil net' };
+const STRENGTH_LABEL = { flat: 'profil équilibré, plusieurs archétypes proches', moderate: 'tendance à confirmer', clear: 'profil net' };
 
 // Contenu du rapport (pur, testable) : lecture, trois points forts, trois points à travailler, fiabilité.
 function buildReportContent(r) {
@@ -2239,7 +2247,7 @@ function buildReportContent(r) {
       `Piste (${meta[a].full}) : ${SYNTH[a].piste}.`,
       `À explorer (${meta[low].full}) : ${SYNTH[low].trait}.`
     ],
-    reliability: `Fiabilité : ${STRENGTH_LABEL[strength]} sur ${r.answeredCount} questions. Même en répondant au hasard, le n° 1 atteint en général ${rt.p50} (net au-delà de ${rt.p95}).`
+    reliability: `Fiabilité : ${STRENGTH_LABEL[strength]}, sur ${r.answeredCount} questions. Repère : 100 correspond à un archétype tiré au hasard ; sur une session aléatoire, le n° 1 monte en général vers ${rt.p50} et ne se démarque nettement qu'au-delà de ${rt.p95}.`
   };
 }
 
