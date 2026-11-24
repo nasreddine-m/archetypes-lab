@@ -35,7 +35,7 @@ Application web statique, un fichier `index.html` (HTML/CSS/JS sans framework) +
 ## Brand Commitments
 - Nom : **Archétypes Lab**. Voix : **tutoiement direct et bienveillant**, phrases courtes, sans jargon, comme un ami qui pose de bonnes questions (confirmé par l'auteur).
 - Mention à conserver : « Outil de réflexion personnelle, pas un diagnostic psychologique ».
-- **Identité visuelle d'origine à conserver** (décision de l'auteur, 2026-11-23, après avoir refusé les directions « ludiques et fantaisistes » proposées) : thème sombre bleu nuit (#0f172a, cartes #1e293b), accent or (#d4a373), thème rosé distinct pour les Princesses, police système, cartes arrondies. La modernisation se fait **dans** ce style (hiérarchie, lisibilité, états, animation discrète), pas en le remplaçant.
+- **Identité visuelle (mise à jour 2026-11-24)** : l'identité d'origine (bleu nuit, or, cartes arrondies) a été remplacée, sur décision de l'auteur après essai en variante, par un style « carnet moderne » : fond vert-bleu sombre #0f2a2e, accent abricot #ffb88a, papier crème #f6f0e6, thème violet distinct pour les Princesses, police système sans-serif serrée, sections à filets, angles droits ou à 2 px, boutons rectangulaires. À éviter : cartes uniformes, grands arrondis, boutons en pastille, symétrie excessive, composants de style SaaS, et tout décalage qui ressemble à un défaut. L'ancienne version reste consultable dans le dépôt variante.
 
 ## Evidence on Hand
 - Une banque de 200 questions rédigées et un contrôle de qualité chiffré : poids équilibrés (rapport max/min 1,24 pour le monde 12, 1,12 pour le monde 7), simulations de fiabilité selon la longueur (`docs/session-length-v0.5.0.txt`, `docs/balance-v0.4.0.txt`).

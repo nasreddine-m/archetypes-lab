@@ -16,6 +16,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.8.0 | 2026-11-23 | Tutoiement | Tout le contenu passe au **tutoiement** (200 questions, synthèse, interface), choix de l'auteur pour un public jeune ; charte et contrôle automatique inversés |
 | v0.9.0 | 2026-11-23 | Affinage visuel | Même identité (bleu nuit et or), interface plus claire : accueil simplifié, mode replié, question sans surtitre, résultats à barres, radar sans étiquettes coupées, états de focus, animation discrète, zoom autorisé ; « Déesses » devient « Princesses » dans l'intitulé |
 | v0.10.0 | 2026-11-23 | Suite | Les quatre améliorations : historique local, partage (carte image + texte), « Affiner » (+10 questions sur la même session), seuils de force du profil calibrés sur des réponses au hasard |
+| v0.14.0 | 2026-11-24 | Nouveau design | Design « carnet moderne » adopté après essai en variante : filets, angles droits, boutons rectangulaires, police sans-serif serrée, palette Nuit verte et abricot, nouvelles icônes (rosace) |
 | v0.13.3 | 2026-11-23 | Questions stables | Fin de l'alternance crème / bleu nuit d'une question à l'autre : la carte de question reste en bleu nuit pour ne pas distraire |
 | v0.13.2 | 2026-11-23 | Mise à jour fiable | La page est toujours demandée sans cache HTTP (GitHub Pages la garde 10 min), vérification d'une nouvelle version à chaque ouverture, rechargement automatique quand elle est prête |
 | v0.13.1 | 2026-11-23 | Illustration d'accueil | Le radar du hero (qui évoquait un oiseau) est remplacé par une rosace de 12 pétales aux couleurs des archétypes, sur un médaillon crème |
@@ -34,6 +35,11 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 ---
 
 ## Journal des versions et modifications
+
+### v0.14.0 — 2026-11-24 — Nouveau design adopté
+**Origine.** Une variante a été essayée en parallèle (dépôt séparé), jugée meilleure par l'auteur, puis promue app principale. Les deux ont été échangées : l'ancienne version (v0.13.3, bleu nuit et sable) est conservée dans le dépôt « variante » (https://nasreddine-m.github.io/archetypes-lab-variante/).
+**Ce qui change (style uniquement, contenu et fonctions identiques).** Sections ouvertes séparées par des filets au lieu de cartes ; angles droits ou à 2 px ; boutons rectangulaires avec flèche dessinée ; onglets d'univers soulignés ; options de réponse en lignes ; titres en police système sans-serif, serrés ; palette « Nuit verte et abricot » (fond #0f2a2e, accent #ffb88a, papier #f6f0e6) ; bandes crème / vert sombre alternées ; icônes de l'application remplacées par la rosace.
+**Leçon de la première variante.** « Éviter la symétrie » avait été pris littéralement (blocs décalés de 26 à 30 px), ce qui donnait l'impression de défauts, et la police à empattements faisait vieillot. La v2 garde des éléments de même rang à la même taille : l'asymétrie vient de la hiérarchie, pas de décalages (A41, A42).
 
 ### v0.13.0 — 2026-11-23 — Alternance crème / bleu nuit et icônes
 **Surfaces crème.** Une classe `.paper` redéfinit localement les variables de couleur (fond crème #fbf8f3, texte et accent bleu nuit, sable sur les boutons, teintes d'archétypes en version « papier »). Tout le CSS existant s'adapte sans règle en plus. Accueil : 5 bandes pleine largeur qui alternent (hero bleu, concept crème, univers bleu, façons de participer crème, résultat bleu, fin crème). Réglages : cartes « Combien de questions ? » et historique en crème. Question : la carte alterne crème / bleu d'une question à l'autre. Résultats : signature et profils types en crème, résumé et classement en bleu. Fiche : le texte en crème.
@@ -250,6 +256,9 @@ Question de l'auteur : quel est le nombre idéal de questions ? Simulation avec 
 | A38 | 2026-11-23 | Accueil affiché à chaque ouverture | Demande explicite d'une page d'accueil ; un bouton « Commencer » mène aux réglages | Mémoriser « déjà vu » pour ouvrir directement les réglages |
 | A39 | 2026-11-23 | Garder « archétype » comme mot unique ; ne pas renommer les figures du monde 12 en « princes » | Mot genré pour des figures mixtes, certaines figures ne sont pas des princes (Bouffon, Souverain), chantier large (accueil, fiches, synthèses, PDF, tests) | « Les 12 Princes » en simple étiquette d'onglet |
 | A40 | 2026-11-23 | Mode clair reporté ; l'alternance crème / bleu nuit est livrée d'abord | Demande de l'auteur : « si difficile, le laisser de côté ». La classe .paper pose les bases (variables locales) | Choix Auto / Clair / Sombre : thème clair complet, versions papier des couleurs d'archétypes pour les tampons et barres, couleur de la barre du navigateur |
+| A41 | 2026-11-24 | Même rang = même taille ; l'asymétrie vient de la hiérarchie (grands titres, alignement à gauche, bandes alternées), jamais de décalages | La première variante décalait des blocs et paraissait boguée | Décalages volontaires (rejetés par l'auteur) |
+| A42 | 2026-11-24 | Police système sans-serif plutôt que serif ou police embarquée | Les empattements faisaient vieillot ; une police embarquée ajouterait ~100 Ko par version | Inter embarquée (à reconsidérer) |
+| A43 | 2026-11-24 | Palette « Nuit verte et abricot » remplace bleu nuit et sable ; le thème Princesses garde son violet | Choix de l'auteur après essai | Retour au bleu nuit (conservé dans le dépôt variante) |
 | A35 | 2026-11-23 | « Adoucir, tons plus clairs » = éclaircir la palette sombre existante, pas ajouter un mode clair | Reste dans le style d'origine (A26) ; un mode clair serait un chantier à part | Thème clair complet (à proposer si c'était l'intention) |
 | A9 | 2026-11-23 | Ne pas rééquilibrer la banque dans la v0.2.0 | Rééquilibrer demande de réécrire des dizaines d'options et de les relire une à une : c'est un chantier de contenu à part (backlog 2) | Tout corriger d'un coup : version trop large, régression difficile à isoler |
 

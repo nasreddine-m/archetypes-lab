@@ -1,3 +1,5 @@
+> **Mise à jour v0.14.0** : les couleurs de l'interface sont désormais « Nuit verte et abricot » (fond #0f2a2e, cartes #17393e, accent #ffb88a, papier #f6f0e6, texte papier #0f2a2e). Les 12 teintes d'archétypes ci-dessous sont inchangées. Ce qui suit décrit la palette d'origine (bleu nuit #1c2846 et sable #ebcfa9), conservée dans le dépôt variante.
+
 # Palette élargie (v0.12.0)
 
 Objectif : sublimer l'application sans quitter son identité (bleu nuit `#1c2846`, sable `#ebcfa9`, thème rosé des Princesses).
