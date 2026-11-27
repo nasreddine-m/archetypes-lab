@@ -446,7 +446,10 @@
   .history-row { display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); }
   .history-open { flex: 1; min-width: 0; text-align: left; background: none; border: 0; color: var(--text); padding: 12px 0; cursor: pointer; border-radius: 8px; }
   .history-title { font-size: 15px; font-weight: 700; }
-  .history-sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-sub { font-size: 13px; color: var(--muted); line-height: 1.4; }
+  .history-date { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 2px; }
+  .history-legacy { cursor: default; opacity: 0.7; }
+  .history-note { font-size: 13px; color: var(--muted); line-height: 1.45; margin: 0 0 8px; }
   .history-row .btn-quiet { margin: 0; flex: none; }
   #historyClearBtn { margin: 0 0 8px; padding-left: 0; }
   .synth-stamp { float: right; width: 108px; height: 108px; margin: 2px 0 8px 14px; color: var(--accent); opacity: 0.92; transform: rotate(-8deg); shape-outside: circle(50%); }
@@ -924,6 +927,7 @@
     <div class="card settings paper hidden" id="historyCard">
       <details class="disclosure">
         <summary><span class="row-label">Historique</span><span class="row-value num" id="historyCount"></span></summary>
+        <p class="history-note">Ces résultats sont gardés sur ton téléphone, avec le jour, la date et le nom saisi. Ils ne sont envoyés nulle part.</p>
         <div id="historyList"></div>
         <button class="btn-quiet" id="historyClearBtn" onclick="clearHistory()">Tout effacer</button>
       </details>
@@ -1032,7 +1036,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.17.0';
+const APP_VERSION = 'v0.17.1';
 
 const META_12 = {
   "Roi": { full: "Le Roi", motor: "Structurer, gouverner et garantir la stabilité.", shadow: "Tyrannie, ou abdication et laisser-faire." },
@@ -1733,6 +1737,19 @@ const MODE_LABELS = {
 };
 const APP_URL = 'https://nasreddine-m.github.io/archetypes-lab/';
 
+// « jeudi 27 novembre 2026, 14:32 » : jour de la semaine, date complète et heure.
+function fullDateLabel(ts) {
+  try {
+    const d = new Date(ts);
+    return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ', ' +
+      d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  } catch (e) { return ''; }
+}
+// Le nom n'est affiché que s'il a été saisi : « Moi-même » (valeur par défaut) et « Profil » ne comptent pas.
+function typedName(subject) {
+  const n = (subject || '').trim();
+  return n && !/^(moi-même|profil)$/i.test(n) ? n : '';
+}
 function dateLabel(ts) {
   try { return new Date(ts).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }); } catch (e) { return ''; }
 }
@@ -1768,7 +1785,7 @@ function renderResults(r) {
   const strength = profileStrength(r.universe, r.answeredCount, adj[top1]);
 
   document.getElementById('resSubject').textContent =
-    `${r.subject} • ${r.modeLabel}` + (r.fromHistory ? ` • ${dateLabel(r.id)}` : '');
+    `${r.subject} • ${r.modeLabel}` + (r.fromHistory ? ` • ${fullDateLabel(r.id)}` : '');
   document.getElementById('resSignature').textContent = `${meta[top1].full} — ${meta[top2].full}`;
   let summary = `<strong>Moteur :</strong> ${meta[top1].motor}<br><strong>Ombre :</strong> ${meta[top1].shadow}`;
   if (adj[top1] === adj[top2]) {
@@ -1905,10 +1922,10 @@ function refineSession() {
 
 // --- Historique local (jamais envoyé nulle part) ---------------------------------------------------
 const HISTORY_KEY = 'arch_history';
-const HISTORY_MAX = 30;
+const HISTORY_MAX = 100;   // résultats conservés sur le téléphone (les plus anciens sortent en premier)
 
 // Anciennes clés des profils féminins (avant v0.15.0) : l'historique déjà enregistré est converti à la lecture.
-const KEY_MIGRATION = {"Athéna":"La Sage","Artémis":"La Chasseresse","Hestia":"La Mystique","Héra":"La Reine","Déméter":"La Mère","Perséphone":"La Jeune fille","Aphrodite":"L'Amante","Souverain":"Roi","Amoureux":"Amant","Hors-la-loi":"Rebelle","Protecteur":"Soignant"};
+const KEY_MIGRATION = {"Athéna":"La Sage","Artémis":"La Chasseresse","Hestia":"La Mystique","Héra":"La Reine","Déméter":"La Mère","Perséphone":"La Jeune fille","Aphrodite":"L'Amante"};
 function migrateEntry(e) {
   if (!e || typeof e !== 'object') return e;
   if (Array.isArray(e.order)) e.order = e.order.map(k => KEY_MIGRATION[k] || k);
@@ -1919,20 +1936,24 @@ function migrateEntry(e) {
   }
   return e;
 }
-function loadHistory() {
+// Un résultat est « lisible » si tous ses profils existent dans la grille actuelle. Les résultats de l'ancienne grille mixte
+// (Innocent, Homme ordinaire…, remplacée en v0.16.0) restent conservés, affichés en lecture seule.
+function isValidEntry(e) {
+  return !!(e && Array.isArray(e.order) && e.order.every(k => (e.universe === '7' ? META_7 : META_12)[k]));
+}
+function loadHistoryAll() {
   try {
     const raw = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-    // Un résultat du monde « 12 » qui contenait l'Innocent ou l'Homme ordinaire (grille remplacée en v0.16.0) n'est plus lisible : il est ignoré.
-    const valid = e => e && Array.isArray(e.order) && e.order.every(k => (e.universe === '7' ? META_7 : META_12)[k]);
-    return Array.isArray(raw) ? raw.map(migrateEntry).filter(valid) : [];
+    return Array.isArray(raw) ? raw.filter(e => e && typeof e === 'object').map(migrateEntry) : [];
   } catch (e) { return []; }
 }
+function loadHistory() { return loadHistoryAll().filter(isValidEntry); }
 function saveHistory(list) {
   try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, HISTORY_MAX))); } catch (e) {}
 }
 // Une session affinée met à jour sa propre entrée (même id) au lieu d'en créer une seconde.
 function recordHistory(r) {
-  const list = loadHistory().filter(e => e.id !== r.id);
+  const list = loadHistoryAll().filter(e => e.id !== r.id);
   list.unshift({
     id: r.id, universe: r.universe, mode: r.mode, modeLabel: r.modeLabel, subject: r.subject,
     total: r.total, answered: r.answeredCount, adj: r.adj, order: r.order, v: APP_VERSION
@@ -1941,7 +1962,7 @@ function recordHistory(r) {
   renderHistory();
 }
 function deleteHistory(id) {
-  saveHistory(loadHistory().filter(e => e.id !== id));
+  saveHistory(loadHistoryAll().filter(e => e.id !== id));
   renderHistory();
 }
 // Effacement total en deux temps, comme l'abandon de session.
@@ -1967,34 +1988,41 @@ function openHistory(id) {
     total: e.total, answeredCount: e.answered, adj: e.adj, order: e.order, fromHistory: true
   });
 }
+const LEGACY_FULL = { 'Souverain': 'Le Souverain', 'Amoureux': "L'Amoureux", 'Hors-la-loi': 'Le Hors-la-loi', 'Protecteur': 'Le Protecteur', 'Innocent': "L'Innocent", 'Homme ordinaire': "L'Homme ordinaire" };
 function renderHistory() {
   const card = document.getElementById('historyCard');
   if (!card) return;
-  const list = loadHistory();
+  const list = loadHistoryAll();
   card.classList.toggle('hidden', list.length === 0);
   document.getElementById('historyCount').textContent = list.length ? String(list.length) : '';
   const box = document.getElementById('historyList');
   box.innerHTML = '';
   list.forEach(e => {
-    const meta = e.universe === '12' ? META_12 : META_7;
-    if (!meta[e.order[0]] || !meta[e.order[1]]) return;
+    const valid = isValidEntry(e);
+    const meta = e.universe === '7' ? META_7 : META_12;
+    const nameOf = k => (meta[k] && meta[k].full) || LEGACY_FULL[k] || k;
+    const name = typedName(e.subject);
     const row = document.createElement('div');
     row.className = 'history-row';
-    const open = document.createElement('button');
-    open.className = 'history-open';
+    const open = document.createElement(valid ? 'button' : 'div');
+    open.className = valid ? 'history-open' : 'history-open history-legacy';
+    const date = document.createElement('div');
+    date.className = 'history-date';
+    date.textContent = fullDateLabel(e.id);
     const title = document.createElement('div');
     title.className = 'history-title';
-    title.textContent = `${meta[e.order[0]].full} — ${meta[e.order[1]].full}`;
+    title.textContent = (e.order && e.order.length > 1) ? nameOf(e.order[0]) + ' — ' + nameOf(e.order[1]) : '';
     const sub = document.createElement('div');
     sub.className = 'history-sub';
-    sub.textContent = `${dateLabel(e.id)} · ${e.subject} · ${e.modeLabel} · ${e.answered} questions`;
+    sub.textContent = (name ? 'Pour ' + name + ' · ' : '') + e.modeLabel + ' · ' + e.answered + ' questions' + (valid ? '' : ' · ancienne grille, lecture seule');
+    open.appendChild(date);
     open.appendChild(title);
     open.appendChild(sub);
-    open.onclick = () => openHistory(e.id);
+    if (valid) open.onclick = () => openHistory(e.id);
     const del = document.createElement('button');
     del.className = 'btn-quiet';
     del.textContent = 'Supprimer';
-    del.setAttribute && del.setAttribute('aria-label', `Supprimer le résultat du ${dateLabel(e.id)}`);
+    del.setAttribute && del.setAttribute('aria-label', 'Supprimer le résultat du ' + fullDateLabel(e.id));
     del.onclick = () => deleteHistory(e.id);
     row.appendChild(open);
     row.appendChild(del);

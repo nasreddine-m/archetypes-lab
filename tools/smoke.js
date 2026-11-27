@@ -33,7 +33,7 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.openCat=openCatalog;this.setCat=setCatalog;this.startCat=startFromCatalog;this.B12=BANK_12;this.B7=BANK_7;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.openCat=openCatalog;this.histAll=loadHistoryAll;this.dateFull=fullDateLabel;this.typedName=typedName;this.renderH=renderHistory;this.setCat=setCatalog;this.startCat=startFromCatalog;this.B12=BANK_12;this.B7=BANK_7;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
@@ -164,8 +164,8 @@ ctx.setMode('miroir'); ctx.setLen(20); ctx.start(); finishAll();
 ok(ctx.refineN() === 0, 'affiner : refusé en Miroir (2 questions restantes sur 22, moins de 5)');
 
 // 4e. Historique local
-for (let i = 0; i < 34; i++) { ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll(); }
-ok(ctx.hist().length === 30, 'historique : plafonné à 30 entrées');
+for (let i = 0; i < 104; i++) { ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll(); }
+ok(ctx.hist().length === 100, 'historique : plafonné à 100 entrées');
 const hid = ctx.hist()[3].id;
 ctx.openH(hid);
 ok(!els.viewResult.classList.contains('hidden') && /Retour/.test(els.backBtn.textContent) && els.refineCard.classList.contains('hidden') && els.duoBtn.classList.contains('hidden'), 'historique : réouverture sans « Affiner » ni Duo, bouton Retour');
@@ -280,7 +280,7 @@ const repPromise = ctx.drawRep(rrr);
   const ws = Object.values(w);
   ok(Math.max(...ws) / Math.min(...ws) <= 1.4 && w['Guerrier'] >= 80 && w['Père'] >= 80, 'banque 12 : équilibre des poids (max/min ≤ 1,4 ; Père et Guerrier bien représentés)');
   store['arch_history'] = JSON.stringify([{ id: 777, universe: '12', mode: 'decl', modeLabel: 'x', subject: 't', total: 10, answered: 10, adj: {}, order: ['Souverain', 'Innocent', 'Sage', 'Homme ordinaire', 'Magicien', 'Hors-la-loi', 'Explorateur', 'Créateur', 'Héros', 'Protecteur', 'Amoureux', 'Bouffon'], v: 'v0.15.0' }]);
-  ok(ctx.hist().length === 0, 'historique : un ancien résultat du monde mixte (avec Innocent) est ignoré sans erreur');
+  ok(ctx.hist().length === 0 && ctx.histAll().length === 1, 'historique : un ancien résultat du monde mixte reste conservé mais n\'est plus ouvrable');
   delete store['arch_history'];
 }
 
@@ -306,6 +306,31 @@ const repPromise = ctx.drawRep(rrr);
   ctx.openFK('Roi', '12');
   ok(els.ficheBack.textContent === 'Retour au résultat', 'fiche ouverte depuis un résultat : le bouton reste « Retour au résultat »');
   ctx.setU('12'); ctx.goHome();
+}
+
+// 4m. Historique : jour, date, heure et nom seulement s'il est saisi
+{
+  const d = new Date(2026, 10, 27, 14, 32).getTime();
+  const lbl = ctx.dateFull(d);
+  ok(/vendredi 27 novembre 2026/.test(lbl) && /14:32/.test(lbl), 'historique : jour, date complète et heure (« ' + lbl + ' »)');
+  ok(ctx.typedName('Sophie') === 'Sophie' && ctx.typedName('  Marc ') === 'Marc' && ctx.typedName('Moi-même') === '' && ctx.typedName('moi-même') === '' && ctx.typedName('Profil') === '' && ctx.typedName('') === '', "historique : le nom n'est retenu que s'il est saisi (« Moi-même » et « Profil » ne comptent pas)");
+  const k7 = Object.keys(ctx.M7);
+  const mkE = (id, subject, universe, order) => ({ id, universe, mode: 'decl', modeLabel: 'Déclaratif pur', subject, total: 20, answered: 20, adj: Object.fromEntries(order.map((k, i) => [k, 200 - i * 10])), order, v: 'v0.17.1' });
+  store['arch_history'] = JSON.stringify([
+    mkE(d, 'Sophie', '7', k7),
+    mkE(d - 86400000, 'Moi-même', '7', k7),
+    mkE(d - 2 * 86400000, 'Moi-même', '12', ['Souverain', 'Innocent', 'Sage', 'Homme ordinaire', 'Magicien', 'Hors-la-loi', 'Explorateur', 'Créateur', 'Héros', 'Protecteur', 'Amoureux', 'Bouffon']),
+  ]);
+  ctx.renderH();
+  const rows = els.historyList.children.map(r => r.children[0].children.map(c => c.textContent));
+  ok(rows.length === 3 && els.historyCount.textContent === '3', "historique : trois résultats conservés et comptés, dont un de l'ancienne grille");
+  ok(/vendredi 27 novembre 2026/.test(rows[0][0]) && /Pour Sophie/.test(rows[0][2]), 'historique : le nom saisi apparaît (« Pour Sophie ») avec le jour et la date');
+  ok(/jeudi 26 novembre 2026/.test(rows[1][0]) && !/Pour /.test(rows[1][2]), 'historique : sans nom saisi, aucune mention de nom');
+  ok(/Souverain — L'Innocent/.test(rows[2][1]) && /ancienne grille, lecture seule/.test(rows[2][2]), "historique : un résultat de l'ancienne grille garde ses anciens noms, en lecture seule");
+  ctx.delH(d - 2 * 86400000);
+  ok(ctx.histAll().length === 2, "historique : un résultat de l'ancienne grille peut être supprimé");
+  delete store['arch_history'];
+  ctx.renderH();
 }
 
 // 5. PWA : fichiers et cohérence des versions
