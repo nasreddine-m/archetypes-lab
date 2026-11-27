@@ -2,7 +2,7 @@
 
 L'application donne, après chaque test masculin, deux figures : la plus haute (1re) et la suivante (2e). Cela fait 12 × 12 = 144 cases, dont 12 sont impossibles (deux fois la même figure), soit **132 paires valides**. Chaque paire est associée à l'un des quatre profils de base : **alpha, bêta, sigma, gamma**.
 
-> **Avertissement.** Cette typologie est informelle : une source la qualifie de pseudo-scientifique, une autre dit qu'elle est contredite par la recherche en personnalité, et les définitions du gamma se contredisent. Le rattachement des figures aux quatre familles est une **interprétation** (arbitrage A55), pas une règle établie. Elle n'est pas affichée dans l'application.
+> **Avertissement.** Cette typologie est informelle : une source la qualifie de pseudo-scientifique, une autre dit qu'elle est contredite par la recherche en personnalité, et les définitions du gamma se contredisent. Le rattachement des figures aux quatre familles est une **interprétation** (arbitrage A55), pas une règle établie. Depuis la v0.18.0, elle est affichée dans les résultats masculins (carte « Profil alpha / bêta / sigma / gamma »), avec une mention d'avertissement (arbitrage A58).
 
 ## Les quatre familles (ordre du cercle du radar)
 | Profil de base | Figures |

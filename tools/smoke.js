@@ -33,7 +33,7 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.openCat=openCatalog;this.histAll=loadHistoryAll;this.dateFull=fullDateLabel;this.typedName=typedName;this.renderH=renderHistory;this.setCat=setCatalog;this.startCat=startFromCatalog;this.B12=BANK_12;this.B7=BANK_7;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.baseProfile=baseProfile;this.baseText=buildBaseText;this.openCat=openCatalog;this.histAll=loadHistoryAll;this.dateFull=fullDateLabel;this.typedName=typedName;this.renderH=renderHistory;this.setCat=setCatalog;this.startCat=startFromCatalog;this.B12=BANK_12;this.B7=BANK_7;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
@@ -396,6 +396,32 @@ const repPromise = ctx.drawRep(rrr);
   ok(m.length === 12 && m.every((r, i) => r.length === 12 && r[i] === null) && cellules.length === 132 && cellules.every(c => FAMILLES.includes(c)), 'matrice : 12 x 12, diagonale vide, 132 paires valides, chacune associée à un profil de base');
   ok(FAMILLES.every(f => compte[f] === 33), 'matrice : répartition parfaitement équilibrée (33 paires par profil de base)');
   ok(ORDRE.every(a => ORDRE.every(b => a === b || famille(a) !== famille(b) || profilDeBase(a, b) === famille(a))), 'matrice : deux figures de la même famille donnent toujours cette famille');
+}
+
+// 4t. Profil de base (alpha, bêta, sigma, gamma) dans l'appréciation du profil masculin
+{
+  const { ORDRE, matrice } = require('./matrice-profils.js');
+  const m = matrice();
+  let diff = 0;
+  ORDRE.forEach((a, i) => ORDRE.forEach((b, j) => { if (ctx.baseProfile(a, b) !== m[i][j]) diff++; }));
+  ok(diff === 0, "profil de base : l'application et la matrice documentée donnent la même réponse pour les 144 cases");
+  const t = ctx.baseText('12', ['Héros', 'Sage', ...ORDRE.filter(k => k !== 'Héros' && k !== 'Sage')], 'clear');
+  ok(t && t.profile === 'sigma' && /correspond à un profil sigma/.test(t.combo) && /relève plutôt de la famille alpha/.test(t.combo) && /fait pencher ton profil vers sigma/.test(t.combo), 'profil de base : Héros puis Sage = sigma, avec explication du basculement depuis la famille alpha');
+  const t2 = ctx.baseText('12', ['Guerrier', 'Sage', ...ORDRE.filter(k => k !== 'Guerrier' && k !== 'Sage')], 'clear');
+  ok(t2 && t2.profile === 'alpha' && !/relève plutôt/.test(t2.combo), "profil de base : Guerrier puis Sage = alpha, sans phrase de basculement");
+  const t3 = ctx.baseText('12', ['Créateur', 'Roi', ...ORDRE.filter(k => k !== 'Créateur' && k !== 'Roi')], 'flat');
+  ok(t3 && /indicatif/.test(t3.combo), 'profil de base : un profil peu contrasté est présenté comme indicatif');
+  ok(['alpha', 'bêta', 'sigma', 'gamma'].every(p => ctx.baseText('12', ORDRE.filter(k => k !== 'x'), 'clear') !== undefined) && /Typologie populaire, informelle et non validée/.test(t.caution) && /varient beaucoup/.test(ctx.baseText('12', ['Créateur', 'Magicien', ...ORDRE.filter(k => k !== 'Créateur' && k !== 'Magicien')], 'clear').desc), 'profil de base : mise en garde « typologie informelle » ; le gamma signale que ses définitions varient');
+  ok(ctx.baseText('7', Object.keys(ctx.M7), 'clear') === null, 'profil de base : aucun profil de base pour le monde féminin');
+  // Affichage dans les résultats
+  ctx.setU('12'); ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
+  ok(!els.baseCard.classList.contains('hidden') && /^Profil (alpha|bêta|sigma|gamma)$/.test(els.baseName.textContent) && els.baseDesc.textContent.length > 40, 'profil de base : la carte est affichée à la fin d\'un test masculin, avec description');
+  ctx.setU('7'); ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
+  ok(els.baseCard.classList.contains('hidden'), 'profil de base : la carte est masquée à la fin d\'un test féminin');
+  ctx.setU('12'); ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
+  const rr = ctx.S.lastResult, rep = ctx.rep(rr);
+  ok(/Profil de base : (alpha|bêta|sigma|gamma) \(typologie populaire, indicatif\)/.test(rep.lecture), 'rapport PDF : la lecture du profil mentionne le profil de base (monde masculin)');
+  ctx.goHome();
 }
 
 // 5. PWA : fichiers et cohérence des versions

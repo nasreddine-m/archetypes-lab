@@ -519,6 +519,11 @@
   .cat-name { display: block; font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
   .cat-motor { display: block; font-size: 14px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
   .cat-link { margin-top: -10px; margin-bottom: 14px; }
+  /* Profil de base */
+  .base-name { color: var(--accent); font-size: 26px; letter-spacing: -0.8px; margin-bottom: 10px; }
+  .base-combo { font-size: 16px; line-height: 1.55; margin: 0 0 10px; }
+  .base-desc { font-size: 16px; line-height: 1.6; margin: 0 0 12px; max-width: 65ch; }
+  .base-caution { font-size: 13px; line-height: 1.5; color: var(--muted); margin: 0; }
   .header-right { display: flex; align-items: center; gap: 10px; }
   .home-btn {
     display: inline-flex;
@@ -997,6 +1002,13 @@
       <div class="legend" style="margin:12px 0 0">Touche un profil pour lire sa fiche. Tu peux aussi toucher une ligne du classement.</div>
     </div>
 
+    <div class="card hidden" id="baseCard">
+      <h2 class="card-title base-name" id="baseName"></h2>
+      <p class="base-combo" id="baseCombo"></p>
+      <p class="base-desc" id="baseDesc"></p>
+      <p class="base-caution" id="baseCaution"></p>
+    </div>
+
     <div class="card">
       <h2 class="card-title">Classement</h2>
       <div class="legend" id="rankLegend"></div>
@@ -1040,7 +1052,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.17.6';
+const APP_VERSION = 'v0.18.0';
 
 // Ordre = ordre des branches du radar : les profils les plus proches (6 critères) sont voisins, famille par famille
 // (Roi, Guerrier, Héros | Rebelle, Explorateur, Sage | Magicien, Créateur, Bouffon | Amant, Soignant, Père). Voir tools/ordre-radar.js.
@@ -1795,6 +1807,7 @@ function renderResults(r) {
   document.getElementById('resSubject').textContent =
     `${r.subject} • ${r.modeLabel}` + (r.fromHistory ? ` • ${fullDateLabel(r.id)}` : '');
   document.getElementById('resSignature').textContent = `${meta[top1].full} — ${meta[top2].full}`;
+  renderBaseProfile(r, strength);
   let summary = `<strong>Moteur :</strong> ${meta[top1].motor}<br><strong>Ombre :</strong> ${meta[top1].shadow}`;
   if (adj[top1] === adj[top2]) {
     summary += `<br><em>Égalité entre ${meta[top1].full} et ${meta[top2].full} : ordre indicatif.</em>`;
@@ -2352,12 +2365,13 @@ function buildReportContent(r) {
   const strength = profileStrength(r.universe, r.answeredCount, r.adj[a]);
   const rt = randomTopFor(r.universe, r.answeredCount);
   const synth = buildSynthesis(meta, r.order, r.adj, r.answeredCount, strength);
+  const baseTxt = buildBaseText(r.universe, r.order, strength);
   let date = '';
   try { date = new Date(r.id).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) {}
   return {
     title: `${meta[a].full} — ${meta[b].full}`,
     subject: r.subject, modeLabel: r.modeLabel, date, answered: r.answeredCount, rt,
-    lecture: synth[0],
+    lecture: synth[0] + (baseTxt ? ' Profil de base : ' + baseTxt.profile + ' (typologie populaire, indicatif).' : ''),
     strengths: [
       `${meta[a].full} : ${lc(SYNTH[a].nuance)}.`,
       `${meta[b].full} : ${lc(SYNTH[b].nuance)}.`,
@@ -2559,6 +2573,62 @@ async function shareReport() {
   } catch (e) {
     note.textContent = e && e.name === 'AbortError' ? 'Partage annulé.' : 'Impossible de créer le rapport ici.';
   }
+}
+
+// --- Profil de base (alpha, bêta, sigma, gamma) : lecture de la paire des deux premières figures -----------------
+// Typologie populaire et informelle (docs/matrice-profils-de-base.md) : le rattachement des figures aux familles est une interprétation.
+// Les 12 figures sont en cercle dans l'ordre du radar (META_12), trois par famille. Pour une paire (1re, 2e), le profil de base est la
+// famille du secteur où tombe le centre de gravité des deux positions, avec les poids 2 et 1 (comme le scoring).
+const BASE_FAMILIES = ['alpha', 'sigma', 'gamma', 'bêta'];
+const BASE_INFO = {
+  alpha: { desc: "Assurance, sens de l'initiative et goût de la responsabilité. Tu prends facilement la tête d'un groupe, tu tranches et tu passes à l'action. À surveiller : décider trop vite pour les autres." },
+  'bêta': { desc: "Coopération, douceur et attention aux autres. Tu crées du lien, tu soutiens et tu cherches l'harmonie. À surveiller : t'effacer ou passer après tout le monde." },
+  sigma: { desc: "Indépendance, recul et liberté vis-à-vis des codes du groupe. Tu avances à ta façon, sans chercher à dominer ni à plaire. À surveiller : l'isolement ou la difficulté à demander de l'aide." },
+  gamma: { desc: "Sensibilité, imagination et expressivité. Tu transformes ce que tu ressens ou observes en idées, en œuvres ou en humour. À surveiller : te perdre dans tes idées ou chercher la reconnaissance des autres. Les définitions du gamma varient beaucoup selon les sources." }
+};
+function baseFamily(key) {
+  const i = Object.keys(META_12).indexOf(key);
+  return i < 0 ? null : BASE_FAMILIES[Math.floor(i / 3)];
+}
+function baseProfile(first, second, weights = [2, 1]) {
+  const keys = Object.keys(META_12);
+  const a = keys.indexOf(first), b = keys.indexOf(second);
+  if (a < 0 || b < 0 || a === b) return null;
+  const ang = i => (2 * Math.PI * i) / 12;
+  const x = weights[0] * Math.cos(ang(a)) + weights[1] * Math.cos(ang(b));
+  const y = weights[0] * Math.sin(ang(a)) + weights[1] * Math.sin(ang(b));
+  let p = Math.atan2(y, x) / (2 * Math.PI) * 12;
+  if (p < 0) p += 12;
+  const sect = (p + 0.5) / 3;   // 0 à 4 : quart du cercle ; chaque figure est au centre de sa case
+  if (Math.abs(sect - Math.round(sect)) < 1e-6) return baseFamily(first);   // pile sur une frontière : la famille de la 1re figure l'emporte
+  return BASE_FAMILIES[Math.floor(sect + 1e-9) % 4];
+}
+// Texte affiché (monde masculin uniquement) : combinaison, description et mise en garde.
+function buildBaseText(universe, order, strength) {
+  if (universe !== '12' || !order || order.length < 2) return null;
+  const a = order[0], b = order[1];
+  const profile = baseProfile(a, b);
+  if (!profile) return null;
+  const famA = baseFamily(a);
+  const n1 = inSentence(META_12[a].full), n2 = inSentence(META_12[b].full);
+  let combo = `Ta combinaison, ${n1} puis ${n2}, correspond à un profil ${profile}.`;
+  if (famA !== profile) combo += ` ${META_12[a].full} relève plutôt de la famille ${famA} ; ${n2} fait pencher ton profil vers ${profile}.`;
+  if (strength === 'flat') combo += ' Ton profil étant peu contrasté, ce rattachement reste indicatif.';
+  return {
+    profile, title: `Profil ${profile}`, combo, desc: BASE_INFO[profile].desc,
+    caution: "Typologie populaire, informelle et non validée scientifiquement : un repère de réflexion, pas une étiquette."
+  };
+}
+function renderBaseProfile(r, strength) {
+  const card = document.getElementById('baseCard');
+  if (!card) return;
+  const t = buildBaseText(r.universe, r.order, strength);
+  card.classList.toggle('hidden', !t);
+  if (!t) return;
+  document.getElementById('baseName').textContent = t.title;
+  document.getElementById('baseCombo').textContent = t.combo;
+  document.getElementById('baseDesc').textContent = t.desc;
+  document.getElementById('baseCaution').textContent = t.caution;
 }
 
 function drawRadar(keys, scoresA, scoresB, targetCanvas, targetSize, opts) {
