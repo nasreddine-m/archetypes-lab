@@ -667,8 +667,10 @@
   .q-text { font-size: 24px; font-weight: 600; line-height: 1.22; letter-spacing: -0.6px; margin: 0 0 22px; max-width: 20em; }
   .option-btn { background: none; border: none; border-top: 1px solid var(--border); border-radius: 0; margin: 0; padding: 16px 4px 16px 0; min-height: 60px; align-items: baseline; }
   .option-btn:last-child { border-bottom: 1px solid var(--border); margin-bottom: 18px; }
-  .option-btn:hover { border-color: var(--border); background: var(--accent-soft); }
-  .option-btn:active { transform: none; background: var(--accent-soft); }
+  /* Aucune réponse en surbrillance sur écran tactile : sur iPhone, l'état « survol » reste collé sous le doigt après un appui
+     et colorerait la réponse de la question suivante. Le survol n'existe donc que pour une vraie souris. */
+  .option-btn:hover, .option-btn:active { transform: none; background: none; border-color: var(--border); }
+  @media (hover: hover) and (pointer: fine) { .option-btn:hover { background: var(--accent-soft); } }
   .opt-letter { width: 26px; height: auto; background: none; border-radius: 0; justify-content: flex-start; font-size: 17px; font-weight: 600; color: var(--accent); }
   .opt-label { font-size: 17px; }
 
@@ -1038,7 +1040,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.17.2';
+const APP_VERSION = 'v0.17.3';
 
 const META_12 = {
   "Roi": { full: "Le Roi", motor: "Structurer, gouverner et garantir la stabilité.", shadow: "Tyrannie, ou abdication et laisser-faire." },
@@ -1642,6 +1644,7 @@ function startQuiz() {
 
 function renderQuestion() {
   clearInterval(state.timerId);
+  if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   const q = state.questions[state.idx];
   document.getElementById('qCounter').textContent = `Question ${state.idx + 1} / ${state.total}`;
   document.getElementById('qModeBadge').textContent = q.m;

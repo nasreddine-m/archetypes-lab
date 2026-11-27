@@ -342,6 +342,16 @@ const repPromise = ctx.drawRep(rrr);
   ok(!/\beval\s*\(|new Function\s*\(|document\.write\s*\(/.test(script), "sécurité : ni eval, ni new Function, ni document.write dans le code de l'application");
 }
 
+// 4o. Questionnaire : aucune réponse en surbrillance sur écran tactile
+{
+  const css = html.slice(html.lastIndexOf('<style>'), html.lastIndexOf('</style>'));
+  const rules = [...css.matchAll(/\.option-btn:(hover|active)[^{]*\{[^}]*\}/g)].map(m => m[0]);
+  const lastTouch = css.slice(css.lastIndexOf('.option-btn:hover, .option-btn:active'));
+  ok(/\.option-btn:hover, \.option-btn:active \{[^}]*background: none/.test(lastTouch), "questionnaire : au toucher, ni survol ni appui ne colorent une réponse");
+  ok(/@media \(hover: hover\) and \(pointer: fine\) \{ \.option-btn:hover \{ background: var\(--accent-soft\); \} \}/.test(css), "questionnaire : le survol n'existe que pour une vraie souris");
+  ok(rules.length >= 2, 'questionnaire : les règles de base existent toujours');
+}
+
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
