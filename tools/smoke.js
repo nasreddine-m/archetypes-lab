@@ -352,6 +352,17 @@ const repPromise = ctx.drawRep(rrr);
   ok(rules.length >= 2, 'questionnaire : les règles de base existent toujours');
 }
 
+// 4p. Radar : les profils les plus proches sont voisins (circuit de longueur minimale sur les 6 critères)
+{
+  const { MASCULINS } = require('./profils-criteres.js');
+  const { meilleurCircuit } = require('./ordre-radar.js');
+  const ordre = Object.keys(ctx.M12).map(k => ctx.M12[k].full);
+  const dd = (a, b) => MASCULINS[a].reduce((s, v, i) => s + Math.abs(v - MASCULINS[b][i]), 0);
+  const longueur = ordre.reduce((s, a, i) => s + dd(a, ordre[(i + 1) % ordre.length]), 0);
+  ok(ordre.every(n => MASCULINS[n]) && longueur === meilleurCircuit(MASCULINS).longueur, 'radar : l\'ordre des 12 figures est le circuit le plus court (longueur ' + longueur + ')');
+  ok(Object.keys(ctx.M12).slice(0, 3).join() === 'Roi,Guerrier,Héros' && Object.keys(ctx.M12).slice(-3).join() === 'Amant,Soignant,Père', 'radar : Roi, Guerrier, Héros se suivent ; Amant, Soignant, Père terminent le tour');
+}
+
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));

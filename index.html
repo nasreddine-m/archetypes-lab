@@ -1040,21 +1040,23 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.17.3';
+const APP_VERSION = 'v0.17.4';
 
+// Ordre = ordre des branches du radar : les profils les plus proches (6 critères) sont voisins, famille par famille
+// (Roi, Guerrier, Héros | Rebelle, Explorateur, Sage | Magicien, Créateur, Bouffon | Amant, Soignant, Père). Voir tools/ordre-radar.js.
 const META_12 = {
   "Roi": { full: "Le Roi", motor: "Structurer, gouverner et garantir la stabilité.", shadow: "Tyrannie, ou abdication et laisser-faire." },
-  "Père": { full: "Le Père", motor: "Protéger les siens, subvenir à leurs besoins et transmettre.", shadow: "Excès de contrôle, ou absence et indisponibilité." },
   "Guerrier": { full: "Le Guerrier", motor: "Servir une cause avec discipline, courage et loyauté.", shadow: "Dureté sans limite, ou soumission à toute pression." },
-  "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
-  "Amant": { full: "L'Amant", motor: "Créer une connexion profonde et sensorielle.", shadow: "Dépendance affective, ou détachement émotionnel." },
-  "Sage": { full: "Le Sage", motor: "Chercher la vérité objective et modéliser les systèmes.", shadow: "Paralysie par l'analyse, détachement." },
-  "Explorateur": { full: "L'Explorateur", motor: "Repousser les frontières et préserver son autonomie.", shadow: "Instabilité chronique, fuite de l'engagement." },
-  "Créateur": { full: "Le Créateur", motor: "Bâtir une œuvre durable et singulière.", shadow: "Perfectionnisme bloquant." },
   "Héros": { full: "Le Héros", motor: "Relever les défis et triompher par l'effort.", shadow: "Besoin constant d'un combat." },
   "Rebelle": { full: "Le Rebelle", motor: "Briser les règles absurdes et renverser le statu quo.", shadow: "Rupture gratuite, marginalisation." },
+  "Explorateur": { full: "L'Explorateur", motor: "Repousser les frontières et préserver son autonomie.", shadow: "Instabilité chronique, fuite de l'engagement." },
+  "Sage": { full: "Le Sage", motor: "Chercher la vérité objective et modéliser les systèmes.", shadow: "Paralysie par l'analyse, détachement." },
+  "Magicien": { full: "Le Magicien", motor: "Comprendre les lois cachées pour transformer la réalité.", shadow: "Mise à distance analytique ou manipulation." },
+  "Créateur": { full: "Le Créateur", motor: "Bâtir une œuvre durable et singulière.", shadow: "Perfectionnisme bloquant." },
   "Bouffon": { full: "Le Bouffon", motor: "Dédramatiser le réel par l'humour et le paradoxe.", shadow: "Fuite des responsabilités." },
-  "Soignant": { full: "Le Soignant", motor: "Prendre soin des autres et se mettre à leur service.", shadow: "Oubli de soi, surprotection." }
+  "Amant": { full: "L'Amant", motor: "Créer une connexion profonde et sensorielle.", shadow: "Dépendance affective, ou détachement émotionnel." },
+  "Soignant": { full: "Le Soignant", motor: "Prendre soin des autres et se mettre à leur service.", shadow: "Oubli de soi, surprotection." },
+  "Père": { full: "Le Père", motor: "Protéger les siens, subvenir à leurs besoins et transmettre.", shadow: "Excès de contrôle, ou absence et indisponibilité." }
 };
 
 const META_7 = {
