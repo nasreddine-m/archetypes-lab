@@ -333,6 +333,15 @@ const repPromise = ctx.drawRep(rrr);
   ctx.renderH();
 }
 
+// 4n. Sécurité : politique de contenu et aucune ressource externe
+{
+  const csp = (html.match(/http-equiv="Content-Security-Policy" content="([^"]*)"/) || [])[1] || '';
+  ok(/default-src 'self'/.test(csp) && /connect-src 'self'/.test(csp) && /object-src 'none'/.test(csp) && /form-action 'none'/.test(csp) && /base-uri 'self'/.test(csp), "sécurité : politique de contenu (rien d'externe, aucun envoi, pas d'objet, pas de formulaire)");
+  const external = [...html.matchAll(/<(?:script|link|img|iframe|source)[^>]+(?:src|href)="(https?:[^"]+)"/g)].map(m => m[1]);
+  ok(external.length === 0 && !/@import|url\(\s*['"]?https?:/.test(html), 'sécurité : aucune ressource externe chargée par la page (script, style, image, cadre)');
+  ok(!/\beval\s*\(|new Function\s*\(|document\.write\s*\(/.test(script), "sécurité : ni eval, ni new Function, ni document.write dans le code de l'application");
+}
+
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
