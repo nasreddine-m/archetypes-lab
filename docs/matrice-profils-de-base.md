@@ -41,3 +41,38 @@ Lignes : 1re figure. Colonnes : 2e figure. **A** alpha · **S** sigma · **G** g
 - Les cases dépendent de deux choix interprétatifs : le rattachement des figures aux familles et les poids 2 / 1. Changer l'un ou l'autre change la matrice.
 - Aucune validation empirique : personne n'a vérifié que ce profil de base correspond à ce que la personne ressent ou à un comportement observé.
 - Seules les deux premières figures comptent ; les dix autres scores n'entrent pas dans cette matrice.
+
+---
+
+# Monde féminin : 7 × 7 (v0.19.0)
+
+49 cases, dont 7 impossibles : **42 paires valides**. Même règle que pour les masculins (centre de gravité sur le cercle des figures, poids 2 et 1), avec des arcs de tailles différentes puisque 7 figures ne se partagent pas en 3 par famille.
+
+| Profil de base | Figures | Pourquoi |
+|---|---|---|
+| alpha | La Reine, La Sage | autorité, stratégie, compétence |
+| sigma | La Mystique, La Chasseresse | indépendance, vie intérieure, liberté |
+| gamma | L'Amante, La Curieuse | créativité, empathie, ouverture |
+| bêta | La Mère | soin, soutien, loyauté |
+
+Lignes : 1re figure. Colonnes : 2e figure. **A** alpha · **S** sigma · **G** gamma · **B** bêta.
+
+| 1re \ 2e | Reine | Sage | Mystique | Chasseresse | Amante | Curieuse | Mère |
+|---|---|---|---|---|---|---|---|
+| **La Reine** | – | A | A | A | A | B | A |
+| **La Sage** | A | – | A | S | A | A | A |
+| **La Mystique** | A | S | – | S | S | S | S |
+| **La Chasseresse** | S | S | S | – | S | G | S |
+| **L'Amante** | G | G | S | G | – | G | G |
+| **La Curieuse** | B | G | G | G | G | – | G |
+| **La Mère** | B | A | B | B | G | B | – |
+
+Répartition : 12 alpha, 12 sigma, 12 gamma, 6 bêta. 8 paires sur 42 diffèrent de la famille de la 1re figure. Reproductible avec 
+ode tools/matrice-profils.js.
+
+## Recherche (2026-11-28)
+Les quatre profils existent au féminin, adaptés des versions masculines : alpha (affirmée, orientée objectifs), bêta (attentionnée, loyale, relationnelle), sigma (indépendante, autonome, mystérieuse), gamma (introspective, créative, émotionnellement mûre). Pages consultées : Marriage.com (6 Female Personality Types), MomJunction (beta female), Medium (25 traits of a sigma female), Calm Sage (gamma female personality). Elles reconnaissent que ce ne sont pas des catégories scientifiques, que les descriptions varient, et aucune ne cite de recherche publiée sur les types féminins.
+
+## Limites
+- Découpage choisi parmi trois essais pour sa répartition ; classer La Sage alpha est discutable ; le bêta, avec une seule figure, est le plus rare (6 paires sur 42).
+- Mêmes limites que pour les masculins : interprétation, pas de validation, seules les deux premières figures comptent.

@@ -1052,7 +1052,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.18.0';
+const APP_VERSION = 'v0.19.0';
 
 // Ordre = ordre des branches du radar : les profils les plus proches (6 critères) sont voisins, famille par famille
 // (Roi, Guerrier, Héros | Rebelle, Explorateur, Sage | Magicien, Créateur, Bouffon | Amant, Soignant, Père). Voir tools/ordre-radar.js.
@@ -2577,45 +2577,64 @@ async function shareReport() {
 
 // --- Profil de base (alpha, bêta, sigma, gamma) : lecture de la paire des deux premières figures -----------------
 // Typologie populaire et informelle (docs/matrice-profils-de-base.md) : le rattachement des figures aux familles est une interprétation.
-// Les 12 figures sont en cercle dans l'ordre du radar (META_12), trois par famille. Pour une paire (1re, 2e), le profil de base est la
-// famille du secteur où tombe le centre de gravité des deux positions, avec les poids 2 et 1 (comme le scoring).
+// Les figures sont en cercle dans l'ordre du radar (META_12 ou META_7). Pour une paire (1re, 2e), le profil de base est la famille de
+// l'arc où tombe le centre de gravité des deux positions, avec les poids 2 et 1 (comme le scoring).
 const BASE_FAMILIES = ['alpha', 'sigma', 'gamma', 'bêta'];
+// Nombre de figures par famille, dans l'ordre du cercle : 12 masculines (Roi, Guerrier, Héros | Rebelle, Explorateur, Sage | Magicien, Créateur,
+// Bouffon | Amant, Soignant, Père) ; 7 féminines (La Reine, La Sage | La Mystique, La Chasseresse | L'Amante, La Curieuse | La Mère).
+const BASE_SIZES = { '12': [3, 3, 3, 3], '7': [2, 2, 2, 1] };
 const BASE_INFO = {
-  alpha: { desc: "Assurance, sens de l'initiative et goût de la responsabilité. Tu prends facilement la tête d'un groupe, tu tranches et tu passes à l'action. À surveiller : décider trop vite pour les autres." },
-  'bêta': { desc: "Coopération, douceur et attention aux autres. Tu crées du lien, tu soutiens et tu cherches l'harmonie. À surveiller : t'effacer ou passer après tout le monde." },
-  sigma: { desc: "Indépendance, recul et liberté vis-à-vis des codes du groupe. Tu avances à ta façon, sans chercher à dominer ni à plaire. À surveiller : l'isolement ou la difficulté à demander de l'aide." },
-  gamma: { desc: "Sensibilité, imagination et expressivité. Tu transformes ce que tu ressens ou observes en idées, en œuvres ou en humour. À surveiller : te perdre dans tes idées ou chercher la reconnaissance des autres. Les définitions du gamma varient beaucoup selon les sources." }
+  '12': {
+    alpha: "Assurance, sens de l'initiative et goût de la responsabilité. Tu prends facilement la tête d'un groupe, tu tranches et tu passes à l'action. À surveiller : décider trop vite pour les autres.",
+    'bêta': "Coopération, douceur et attention aux autres. Tu crées du lien, tu soutiens et tu cherches l'harmonie. À surveiller : t'effacer ou passer après tout le monde.",
+    sigma: "Indépendance, recul et liberté vis-à-vis des codes du groupe. Tu avances à ta façon, sans chercher à dominer ni à plaire. À surveiller : l'isolement ou la difficulté à demander de l'aide.",
+    gamma: "Sensibilité, imagination et expressivité. Tu transformes ce que tu ressens ou observes en idées, en œuvres ou en humour. À surveiller : te perdre dans tes idées ou chercher la reconnaissance des autres. Les définitions du gamma varient beaucoup selon les sources."
+  },
+  '7': {
+    alpha: "Assurance, détermination et sens de l'influence. Tu avances vers tes objectifs et tu entraînes les autres. À surveiller : la difficulté à montrer ta vulnérabilité ou à laisser la main.",
+    'bêta': "Gentillesse, loyauté et intelligence des émotions. Tu soutiens, tu écoutes et tu rassembles. À surveiller : éviter les désaccords au point de te mettre en retrait.",
+    sigma: "Indépendance, autonomie et goût de ta propre voie. Tu n'as pas besoin de l'approbation du groupe et tu aimes ton espace. À surveiller : rester à distance, même quand tu aurais besoin des autres.",
+    gamma: "Introspection, créativité et maturité émotionnelle. Tu cherches à comprendre, à t'améliorer et à donner du sens. À surveiller : trop te replier sur ton monde intérieur. Les définitions du gamma varient beaucoup selon les sources."
+  }
 };
-function baseFamily(key) {
-  const i = Object.keys(META_12).indexOf(key);
-  return i < 0 ? null : BASE_FAMILIES[Math.floor(i / 3)];
+function baseBorders(universe) {
+  let s = 0;
+  return BASE_SIZES[universe].map(t => (s += t));   // ex. [3, 6, 9, 12] ou [2, 4, 6, 7]
 }
-function baseProfile(first, second, weights = [2, 1]) {
-  const keys = Object.keys(META_12);
+function baseFamily(key, universe) {
+  const keys = Object.keys(universe === '7' ? META_7 : META_12);
+  const i = keys.indexOf(key);
+  return i < 0 ? null : BASE_FAMILIES[baseBorders(universe).findIndex(b => i < b)];
+}
+function baseProfile(first, second, universe, weights = [2, 1]) {
+  const keys = Object.keys(universe === '7' ? META_7 : META_12), n = keys.length;
   const a = keys.indexOf(first), b = keys.indexOf(second);
   if (a < 0 || b < 0 || a === b) return null;
-  const ang = i => (2 * Math.PI * i) / 12;
+  const ang = i => (2 * Math.PI * i) / n;
   const x = weights[0] * Math.cos(ang(a)) + weights[1] * Math.cos(ang(b));
   const y = weights[0] * Math.sin(ang(a)) + weights[1] * Math.sin(ang(b));
-  let p = Math.atan2(y, x) / (2 * Math.PI) * 12;
-  if (p < 0) p += 12;
-  const sect = (p + 0.5) / 3;   // 0 à 4 : quart du cercle ; chaque figure est au centre de sa case
-  if (Math.abs(sect - Math.round(sect)) < 1e-6) return baseFamily(first);   // pile sur une frontière : la famille de la 1re figure l'emporte
-  return BASE_FAMILIES[Math.floor(sect + 1e-9) % 4];
+  let p = Math.atan2(y, x) / (2 * Math.PI) * n;
+  if (p < 0) p += n;
+  let q = p + 0.5;   // chaque figure occupe [i - 0,5 ; i + 0,5[
+  if (q >= n) q -= n;
+  const borders = baseBorders(universe);
+  if ([0, ...borders].some(bd => Math.abs(q - bd) < 1e-6)) return baseFamily(first, universe);   // pile sur une frontière : la famille de la 1re figure l'emporte
+  return BASE_FAMILIES[borders.findIndex(bd => q < bd)];
 }
-// Texte affiché (monde masculin uniquement) : combinaison, description et mise en garde.
+// Texte affiché : combinaison, description et mise en garde.
 function buildBaseText(universe, order, strength) {
-  if (universe !== '12' || !order || order.length < 2) return null;
+  if (!BASE_SIZES[universe] || !order || order.length < 2) return null;
+  const meta = universe === '7' ? META_7 : META_12;
   const a = order[0], b = order[1];
-  const profile = baseProfile(a, b);
+  const profile = baseProfile(a, b, universe);
   if (!profile) return null;
-  const famA = baseFamily(a);
-  const n1 = inSentence(META_12[a].full), n2 = inSentence(META_12[b].full);
+  const famA = baseFamily(a, universe);
+  const n1 = inSentence(meta[a].full), n2 = inSentence(meta[b].full);
   let combo = `Ta combinaison, ${n1} puis ${n2}, correspond à un profil ${profile}.`;
-  if (famA !== profile) combo += ` ${META_12[a].full} relève plutôt de la famille ${famA} ; ${n2} fait pencher ton profil vers ${profile}.`;
+  if (famA !== profile) combo += ` ${meta[a].full} relève plutôt de la famille ${famA} ; ${n2} fait pencher ton profil vers ${profile}.`;
   if (strength === 'flat') combo += ' Ton profil étant peu contrasté, ce rattachement reste indicatif.';
   return {
-    profile, title: `Profil ${profile}`, combo, desc: BASE_INFO[profile].desc,
+    profile, title: `Profil ${profile}`, combo, desc: BASE_INFO[universe][profile],
     caution: "Typologie populaire, informelle et non validée scientifiquement : un repère de réflexion, pas une étiquette."
   };
 }

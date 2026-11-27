@@ -403,7 +403,7 @@ const repPromise = ctx.drawRep(rrr);
   const { ORDRE, matrice } = require('./matrice-profils.js');
   const m = matrice();
   let diff = 0;
-  ORDRE.forEach((a, i) => ORDRE.forEach((b, j) => { if (ctx.baseProfile(a, b) !== m[i][j]) diff++; }));
+  ORDRE.forEach((a, i) => ORDRE.forEach((b, j) => { if (ctx.baseProfile(a, b, '12') !== m[i][j]) diff++; }));
   ok(diff === 0, "profil de base : l'application et la matrice documentée donnent la même réponse pour les 144 cases");
   const t = ctx.baseText('12', ['Héros', 'Sage', ...ORDRE.filter(k => k !== 'Héros' && k !== 'Sage')], 'clear');
   ok(t && t.profile === 'sigma' && /correspond à un profil sigma/.test(t.combo) && /relève plutôt de la famille alpha/.test(t.combo) && /fait pencher ton profil vers sigma/.test(t.combo), 'profil de base : Héros puis Sage = sigma, avec explication du basculement depuis la famille alpha');
@@ -412,15 +412,27 @@ const repPromise = ctx.drawRep(rrr);
   const t3 = ctx.baseText('12', ['Créateur', 'Roi', ...ORDRE.filter(k => k !== 'Créateur' && k !== 'Roi')], 'flat');
   ok(t3 && /indicatif/.test(t3.combo), 'profil de base : un profil peu contrasté est présenté comme indicatif');
   ok(['alpha', 'bêta', 'sigma', 'gamma'].every(p => ctx.baseText('12', ORDRE.filter(k => k !== 'x'), 'clear') !== undefined) && /Typologie populaire, informelle et non validée/.test(t.caution) && /varient beaucoup/.test(ctx.baseText('12', ['Créateur', 'Magicien', ...ORDRE.filter(k => k !== 'Créateur' && k !== 'Magicien')], 'clear').desc), 'profil de base : mise en garde « typologie informelle » ; le gamma signale que ses définitions varient');
-  ok(ctx.baseText('7', Object.keys(ctx.M7), 'clear') === null, 'profil de base : aucun profil de base pour le monde féminin');
+  {
+  const F = require('./matrice-profils.js').FEMININ;
+  const mf = F.matrice();
+  let dF = 0;
+  F.ORDRE.forEach((a, i) => F.ORDRE.forEach((b, j) => { if (ctx.baseProfile(a, b, '7') !== mf[i][j]) dF++; }));
+  const cF = {}; mf.forEach(r => r.forEach(c => { if (c) cF[c] = (cF[c] || 0) + 1; }));
+  ok(JSON.stringify(F.ORDRE) === JSON.stringify(Object.keys(ctx.M7)) && dF === 0, "profil de base féminin : l'application et la matrice documentée donnent la même réponse pour les 49 cases");
+  ok(cF.alpha === 12 && cF.sigma === 12 && cF.gamma === 12 && cF['bêta'] === 6, 'profil de base féminin : répartition 12 / 12 / 12 / 6 sur les 42 paires valides');
+  const tf = ctx.baseText('7', ['La Mère', 'La Reine', ...F.ORDRE.filter(k => k !== 'La Mère' && k !== 'La Reine')], 'clear');
+  ok(tf && tf.profile === 'bêta' && /la Mère puis la Reine/.test(tf.combo) && /Gentillesse, loyauté/.test(tf.desc), 'profil de base féminin : La Mère puis La Reine = bêta, avec description féminine');
+  const tg = ctx.baseText('7', ['La Curieuse', "L'Amante", ...F.ORDRE.filter(k => k !== 'La Curieuse' && k !== "L'Amante")], 'clear');
+  ok(tg && tg.profile === 'gamma' && /varient beaucoup/.test(tg.desc), 'profil de base féminin : gamma, avec la précision sur la variabilité des définitions');
+}
   // Affichage dans les résultats
   ctx.setU('12'); ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
   ok(!els.baseCard.classList.contains('hidden') && /^Profil (alpha|bêta|sigma|gamma)$/.test(els.baseName.textContent) && els.baseDesc.textContent.length > 40, 'profil de base : la carte est affichée à la fin d\'un test masculin, avec description');
   ctx.setU('7'); ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
-  ok(els.baseCard.classList.contains('hidden'), 'profil de base : la carte est masquée à la fin d\'un test féminin');
+  ok(!els.baseCard.classList.contains('hidden') && /^Profil (alpha|bêta|sigma|gamma)$/.test(els.baseName.textContent), 'profil de base : la carte est aussi affichée à la fin d\'un test féminin');
   ctx.setU('12'); ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
   const rr = ctx.S.lastResult, rep = ctx.rep(rr);
-  ok(/Profil de base : (alpha|bêta|sigma|gamma) \(typologie populaire, indicatif\)/.test(rep.lecture), 'rapport PDF : la lecture du profil mentionne le profil de base (monde masculin)');
+  ok(/Profil de base : (alpha|bêta|sigma|gamma) \(typologie populaire, indicatif\)/.test(rep.lecture), 'rapport PDF : la lecture du profil mentionne le profil de base');
   ctx.goHome();
 }
 
