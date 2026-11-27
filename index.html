@@ -1040,7 +1040,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.17.4';
+const APP_VERSION = 'v0.17.5';
 
 // Ordre = ordre des branches du radar : les profils les plus proches (6 critères) sont voisins, famille par famille
 // (Roi, Guerrier, Héros | Rebelle, Explorateur, Sage | Magicien, Créateur, Bouffon | Amant, Soignant, Père). Voir tools/ordre-radar.js.
@@ -1059,14 +1059,15 @@ const META_12 = {
   "Père": { full: "Le Père", motor: "Protéger les siens, subvenir à leurs besoins et transmettre.", shadow: "Excès de contrôle, ou absence et indisponibilité." }
 };
 
+// Ordre = ordre des branches du radar : les profils les plus proches (6 critères) sont voisins. Voir tools/ordre-radar.js.
 const META_7 = {
-  "La Sage": { full: "La Sage", motor: "Clarté d'esprit, stratégie et discernement.", shadow: "Froideur émotionnelle, excès de rationalisation." },
-  "La Chasseresse": { full: "La Chasseresse", motor: "Indépendance farouche, action, protection et liberté.", shadow: "Intransigeance, refus de la vulnérabilité." },
-  "La Mystique": { full: "La Mystique", motor: "Vie intérieure, sérénité et sens du sacré au quotidien.", shadow: "Retrait excessif, isolement." },
   "La Reine": { full: "La Reine", motor: "Dignité, loyauté exigeante et engagement durable.", shadow: "Rigidité, exigence envers l'entourage." },
-  "La Mère": { full: "La Mère", motor: "Bienveillance, soutien inconditionnel et transmission.", shadow: "Surprotection, oubli de soi." },
+  "La Sage": { full: "La Sage", motor: "Clarté d'esprit, stratégie et discernement.", shadow: "Froideur émotionnelle, excès de rationalisation." },
+  "La Mystique": { full: "La Mystique", motor: "Vie intérieure, sérénité et sens du sacré au quotidien.", shadow: "Retrait excessif, isolement." },
+  "La Chasseresse": { full: "La Chasseresse", motor: "Indépendance farouche, action, protection et liberté.", shadow: "Intransigeance, refus de la vulnérabilité." },
+  "L'Amante": { full: "L'Amante", motor: "Magnétisme, désir, esthétique, passion et transformation.", shadow: "Quête d'intensité permanente." },
   "La Jeune fille": { full: "La Jeune fille", motor: "Réceptivité, curiosité, empathie profonde et souplesse.", shadow: "Indécision, frontières floues." },
-  "L'Amante": { full: "L'Amante", motor: "Magnétisme, désir, esthétique, passion et transformation.", shadow: "Quête d'intensité permanente." }
+  "La Mère": { full: "La Mère", motor: "Bienveillance, soutien inconditionnel et transmission.", shadow: "Surprotection, oubli de soi." }
 };
 
 const BANK_12 = [

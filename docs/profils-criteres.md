@@ -19,3 +19,5 @@ Aucune validation empirique : personne n'a vérifié que ces profils se distingu
 
 ## Ordre du radar (v0.17.4)
 Les 12 figures sont placées sur le radar dans l'ordre du circuit le plus court sur les 6 critères (tools/ordre-radar.js) : Roi, Guerrier, Héros, Rebelle, Explorateur, Sage, Magicien, Créateur, Bouffon, Amant, Soignant, Père. Les profils les plus proches sont voisins. Ce regroupement ressemble à la typologie informelle alpha / sigma / gamma / bêta, mais elle n'est pas utilisée ni affichée : elle est contestée et son rattachement serait une interprétation.
+
+Ordre du radar féminin (v0.17.5) : La Reine, La Sage, La Mystique, La Chasseresse, L'Amante, La Jeune fille, La Mère (circuit le plus court, longueur 530).

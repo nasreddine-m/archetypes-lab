@@ -294,7 +294,7 @@ const repPromise = ctx.drawRep(rrr);
   ok(els.catalogList.children.length === 12 && /Le Roi/.test(els.catalogList.children[0].innerHTML) && /Le Guerrier/.test(els.catalogList.children.map(c => c.innerHTML).join(' ')), 'catalogue : les 12 figures masculines sont listées avec leur tampon');
   ctx.setCat('7');
   ok(els.catalogList.children.length === 7 && /La Sage/.test(els.catalogList.children.map(c => c.innerHTML).join(' ')) && els.btnCat7.classList.contains('active') && !els.btnCat12.classList.contains('active'), 'catalogue : bascule vers les 7 figures féminines');
-  els.catalogList.children[3].onclick();
+  els.catalogList.children[0].onclick();   // La Reine ouvre la liste féminine (ordre du radar)
   ok(!els.viewFiche.classList.contains('hidden') && els.viewCatalog.classList.contains('hidden') && els.ficheName.textContent === 'La Reine' && els.ficheBack.textContent === 'Retour aux figures', 'catalogue : une figure ouvre sa fiche, avec le retour « aux figures »');
   ctx.closeF();
   ok(!els.viewCatalog.classList.contains('hidden') && els.viewFiche.classList.contains('hidden') && els.viewResult.classList.contains('hidden'), 'catalogue : le retour ramène au catalogue, pas aux résultats');
@@ -361,6 +361,17 @@ const repPromise = ctx.drawRep(rrr);
   const longueur = ordre.reduce((s, a, i) => s + dd(a, ordre[(i + 1) % ordre.length]), 0);
   ok(ordre.every(n => MASCULINS[n]) && longueur === meilleurCircuit(MASCULINS).longueur, 'radar : l\'ordre des 12 figures est le circuit le plus court (longueur ' + longueur + ')');
   ok(Object.keys(ctx.M12).slice(0, 3).join() === 'Roi,Guerrier,Héros' && Object.keys(ctx.M12).slice(-3).join() === 'Amant,Soignant,Père', 'radar : Roi, Guerrier, Héros se suivent ; Amant, Soignant, Père terminent le tour');
+}
+
+// 4q. Radar féminin : les profils les plus proches sont voisins (circuit de longueur minimale)
+{
+  const { FEMININS } = require('./profils-criteres.js');
+  const { meilleurCircuit } = require('./ordre-radar.js');
+  const ordre = Object.keys(ctx.M7).map(k => ctx.M7[k].full);
+  const dd = (a, b) => FEMININS[a].reduce((s, v, i) => s + Math.abs(v - FEMININS[b][i]), 0);
+  const longueur = ordre.reduce((s, a, i) => s + dd(a, ordre[(i + 1) % ordre.length]), 0);
+  ok(ordre.every(n => FEMININS[n]) && longueur === meilleurCircuit(FEMININS).longueur, "radar : l'ordre des 7 figures féminines est le circuit le plus court (longueur " + longueur + ')');
+  ok(Object.keys(ctx.M7).join() === ["La Reine", "La Sage", "La Mystique", "La Chasseresse", "L'Amante", "La Jeune fille", "La Mère"].join(), 'radar : ordre La Reine, La Sage, La Mystique, La Chasseresse, L\'Amante, La Jeune fille, La Mère');
 }
 
 // 5. PWA : fichiers et cohérence des versions
