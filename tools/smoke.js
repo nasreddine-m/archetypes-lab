@@ -105,7 +105,7 @@ ok(/10 réponses/.test(els.duoDiagnostic.innerHTML), 'duo : nombre de réponses 
 ctx.setLen(30); ok(ctx.S.length === 10, 'duo : longueur verrouillée (setLen ignoré)');
 
 // 4b. Synthèse du profil
-const bare = n => n.replace(/^(Le |L')/, ''); // le texte écrit « du Sage », « de l'Innocent »
+const bare = n => n.replace(/^(Le |La |L')/, ''); // le texte écrit « du Sage », « de la Reine », « de l'Innocent »
 ok(els.synthText.children.length === 4, 'synthèse affichée : tampon + 3 paragraphes dans la page');
 for (const [w, meta] of [['12', ctx.M12], ['7', ctx.M7]]) {
   const keys = Object.keys(meta);
@@ -117,7 +117,7 @@ for (const [w, meta] of [['12', ctx.M12], ['7', ctx.M7]]) {
     for (const level of [200, 100]) {
       const adj = Object.fromEntries(keys.map(k => [k, 50])); adj[a] = level; adj[b] = level === 200 ? 150 : 100;
       const txt = ctx.synth(meta, order, adj, 10).join(' '); n++;
-      if (/ de (Le|L'|Les) | d'(Le|L')|de L'|de Le /.test(txt) || txt.includes('undefined') || txt.includes('NaN') || !txt.includes(bare(meta[a].full)) || !txt.includes(bare(meta[b].full))) bad++;
+      if (/ de (Le|La|L'|Les) | d'(Le|La|L')|de L'|de Le |de La /.test(txt)|| txt.includes('undefined') || txt.includes('NaN') || !txt.includes(bare(meta[a].full)) || !txt.includes(bare(meta[b].full))) bad++;
     }
   }
   ok(bad === 0, `monde ${w} : ${n} synthèses (toutes paires, profil marqué et plat) sans texte manquant`);
@@ -126,8 +126,8 @@ const flatTxt = ctx.synth(ctx.M12, Object.keys(ctx.M12), Object.fromEntries(Obje
 const all = (meta, v) => Object.fromEntries(Object.keys(meta).map(k => [k, v]));
 const p12 = ctx.synth(ctx.M12, ['Innocent', 'Sage', ...Object.keys(ctx.M12).filter(k => k !== 'Innocent' && k !== 'Sage')], all(ctx.M12, 200), 10)[0];
 ok(p12.includes("autour de l'Innocent et du Sage"), "accords monde 12 : autour de l'Innocent et du Sage");
-const p7 = ctx.synth(ctx.M7, ['Aphrodite', 'Hestia', ...Object.keys(ctx.M7).filter(k => k !== 'Aphrodite' && k !== 'Hestia')], all(ctx.M7, 200), 10)[0];
-ok(p7.includes("autour d'Aphrodite et d'Hestia"), "accords monde 7 : autour d'Aphrodite et d'Hestia");
+const p7 = ctx.synth(ctx.M7, ["L'Amante", 'La Mystique', ...Object.keys(ctx.M7).filter(k => k !== "L'Amante" && k !== 'La Mystique')], all(ctx.M7, 200), 10)[0];
+ok(p7.includes("autour de l'Amante et de la Mystique"), "accords monde 7 : autour de l'Amante et de la Mystique");
 ok(/dominante nette|se détache vraiment/.test(flatTxt) && !/hasard/.test(flatTxt) && /Quelques questions de plus/.test(flatTxt), 'profil plat : texte « équilibré », sans mention du hasard, avec invitation à affiner');
 
 // 4c. Force du profil : seuils calibrés sur des réponses au hasard
@@ -201,8 +201,8 @@ ok(!els.viewFiche.classList.contains('hidden') && els.viewResult.classList.conta
 ok(els.ficheBody.children.length >= 8, 'fiche : 4 sections (titre + texte) au minimum');
 ctx.closeF();
 ok(els.viewFiche.classList.contains('hidden') && !els.viewResult.classList.contains('hidden'), 'fiche : retour au résultat');
-ctx.openFK('Athéna', '7');
-ok(els.ficheName.textContent === 'Athéna' && !/Figures souvent associées/.test(els.ficheBody.children.map(c => c.textContent).join(' ')), 'fiche Princesses : ouverture sans figure associée');
+ctx.openFK('La Sage', '7');
+ok(els.ficheName.textContent === 'La Sage' && !/Figures souvent associées/.test(els.ficheBody.children.map(c => c.textContent).join(' ')), 'fiche Princesses : ouverture sans figure associée');
 ctx.closeF();
 const mail = ctx.mailUrl(ctx.S.lastResult);
 ok(mail.startsWith('mailto:?subject=') && mail.length < 1950 && decodeURIComponent(mail).includes('pas un diagnostic') && decodeURIComponent(mail).includes('nasreddine-m.github.io/archetypes-lab'), 'e-mail : lien mailto avec sujet, texte, mention et lien, moins de 1950 caractères');
@@ -253,6 +253,18 @@ const repPromise = ctx.drawRep(rrr);
   const bands = [...landingHtml.matchAll(/<section class="land-sec( paper)?/g)].map(m => !!m[1]);
   ok(bands.length === 5 && bands.every((p, i) => i === 0 ? p : p !== bands[i - 1]), 'accueil : les bandes alternent crème et bleu nuit');
   ok(/\.paper \{[^}]*--text: #0f2a2e/.test(html) && /class="card paper"/.test(html) && !/classList\.toggle\('paper'/.test(html), 'alternance : surfaces crème sur les autres pages, la carte de question reste en bleu nuit');
+}
+
+// 4j. Migration de l'historique enregistré avant v0.15.0 (anciens noms de déesses)
+{
+  const old = ['Athéna', 'Artémis', 'Hestia', 'Héra', 'Déméter', 'Perséphone', 'Aphrodite'];
+  store['arch_history'] = JSON.stringify([{ id: 424242, universe: '7', mode: 'decl', modeLabel: 'Déclaratif pur', subject: 'Test', total: 10, answered: 10, adj: Object.fromEntries(old.map((k, i) => [k, 200 - i * 20])), order: old, v: 'v0.14.1' }]);
+  const e0 = ctx.hist()[0];
+  ok(e0.order[0] === 'La Sage' && e0.order[6] === "L'Amante" && Object.keys(e0.adj).every(k => ctx.M7[k]) && e0.order.every(k => ctx.M7[k]), 'historique : les anciens noms de déesses sont convertis à la lecture');
+  ctx.openH(424242);
+  ok(!els.viewResult.classList.contains('hidden') && /Sage/.test(els.resSignature.textContent), "historique : un ancien résultat s'ouvre avec les nouveaux noms");
+  delete store['arch_history'];
+  ctx.goHome();
 }
 
 // 5. PWA : fichiers et cohérence des versions
