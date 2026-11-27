@@ -23,6 +23,8 @@ Trois recherches web (anglais et français) sur les 12 archétypes de Carol Pear
 - Smart Blogger, « 15 Archetype Examples » : https://smartblogger.com/archetype-examples/
 - Wikipedia, « Jungian archetypes » : https://en.wikipedia.org/wiki/Jungian_archetypes
 
+> **Mise à jour v0.16.0** : le monde « 12 » est devenu masculin (Roi, Père, Guerrier…). Les figures féminines (Élisabeth Iʳᵉ, Jeanne d'Arc, Amelia Earhart, Mère Teresa) et celles des archétypes disparus (Innocent, Homme ordinaire) sont retirées. Restent : Sage (Albert Einstein, Yoda), Magicien (Steve Jobs, Gandalf), Rebelle (Robin des Bois), Créateur (Léonard de Vinci), Roi (le roi Arthur), Héros (Luke Skywalker), Soignant (Samwise Gamgee), Amant (Roméo, John Keats). Aucune pour Père, Guerrier, Explorateur, Bouffon ni les Princesses. Les rapprochements Roi/Souverain, Soignant/Protecteur, Rebelle/Hors-la-loi, Amant/Amoureux sont des correspondances de nom, non sourcées individuellement.
+
 ## Ce qui a été retenu dans l'application (`FIGURES`)
 
 Uniquement des associations signalées par ces recherches, présentées comme **« repères culturels »** :

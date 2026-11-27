@@ -33,7 +33,7 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.B12=BANK_12;this.B7=BANK_7;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
@@ -124,8 +124,8 @@ for (const [w, meta] of [['12', ctx.M12], ['7', ctx.M7]]) {
 }
 const flatTxt = ctx.synth(ctx.M12, Object.keys(ctx.M12), Object.fromEntries(Object.keys(ctx.M12).map(k => [k, 100])), 10, 'flat')[0];
 const all = (meta, v) => Object.fromEntries(Object.keys(meta).map(k => [k, v]));
-const p12 = ctx.synth(ctx.M12, ['Innocent', 'Sage', ...Object.keys(ctx.M12).filter(k => k !== 'Innocent' && k !== 'Sage')], all(ctx.M12, 200), 10)[0];
-ok(p12.includes("autour de l'Innocent et du Sage"), "accords monde 12 : autour de l'Innocent et du Sage");
+const p12 = ctx.synth(ctx.M12, ['Amant', 'Sage', ...Object.keys(ctx.M12).filter(k => k !== 'Amant' && k !== 'Sage')], all(ctx.M12, 200), 10)[0];
+ok(p12.includes("autour de l'Amant et du Sage"), "accords monde 12 : autour de l'Amant et du Sage");
 const p7 = ctx.synth(ctx.M7, ["L'Amante", 'La Mystique', ...Object.keys(ctx.M7).filter(k => k !== "L'Amante" && k !== 'La Mystique')], all(ctx.M7, 200), 10)[0];
 ok(p7.includes("autour de l'Amante et de la Mystique"), "accords monde 7 : autour de l'Amante et de la Mystique");
 ok(/dominante nette|se détache vraiment/.test(flatTxt) && !/hasard/.test(flatTxt) && /Quelques questions de plus/.test(flatTxt), 'profil plat : texte « équilibré », sans mention du hasard, avec invitation à affiner');
@@ -265,6 +265,23 @@ const repPromise = ctx.drawRep(rrr);
   ok(!els.viewResult.classList.contains('hidden') && /Sage/.test(els.resSignature.textContent), "historique : un ancien résultat s'ouvre avec les nouveaux noms");
   delete store['arch_history'];
   ctx.goHome();
+}
+
+// 4k. Monde 12 = 12 archétypes masculins (v0.16.0)
+{
+  const male = ['Roi', 'Père', 'Guerrier', 'Magicien', 'Amant', 'Sage', 'Explorateur', 'Créateur', 'Héros', 'Rebelle', 'Bouffon', 'Soignant'];
+  ok(JSON.stringify(Object.keys(ctx.M12).sort()) === JSON.stringify(male.slice().sort()), 'monde 12 : les 12 profils masculins (Roi, Père, Guerrier, Magicien, Amant, Sage, Explorateur, Créateur, Héros, Rebelle, Bouffon, Soignant)');
+  ok(!('Innocent' in ctx.M12) && !('Homme ordinaire' in ctx.M12) && !('Innocent' in ctx.SYN) && !('Homme ordinaire' in ctx.SYN), "monde 12 : plus d'Innocent ni d'Homme ordinaire");
+  const badTag = ctx.B12.some(q => q.o.some(o => !ctx.M12[o[1]] || !ctx.M12[o[2]] || o[1] === o[2]));
+  ok(!badTag, 'banque 12 : toutes les cibles principales et secondaires sont des profils masculins, jamais identiques');
+  ok(ctx.B12.every(q => new Set(q.o.map(o => o[1])).size === 4), 'banque 12 : quatre cibles principales distinctes dans chaque question');
+  const w = Object.fromEntries(male.map(k => [k, 0]));
+  ctx.B12.forEach(q => q.o.forEach(o => { w[o[1]] += 2; w[o[2]] += 1; }));
+  const ws = Object.values(w);
+  ok(Math.max(...ws) / Math.min(...ws) <= 1.4 && w['Guerrier'] >= 80 && w['Père'] >= 80, 'banque 12 : équilibre des poids (max/min ≤ 1,4 ; Père et Guerrier bien représentés)');
+  store['arch_history'] = JSON.stringify([{ id: 777, universe: '12', mode: 'decl', modeLabel: 'x', subject: 't', total: 10, answered: 10, adj: {}, order: ['Souverain', 'Innocent', 'Sage', 'Homme ordinaire', 'Magicien', 'Hors-la-loi', 'Explorateur', 'Créateur', 'Héros', 'Protecteur', 'Amoureux', 'Bouffon'], v: 'v0.15.0' }]);
+  ok(ctx.hist().length === 0, 'historique : un ancien résultat du monde mixte (avec Innocent) est ignoré sans erreur');
+  delete store['arch_history'];
 }
 
 // 5. PWA : fichiers et cohérence des versions
