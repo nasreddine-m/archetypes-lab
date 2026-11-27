@@ -501,6 +501,19 @@
   .paper .len-btn.active .len-desc { color: var(--accent-ink); opacity: 0.8; }
   .paper .radar-paper { background: transparent; box-shadow: none; padding: 0; }
   .ico { flex: none; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  /* Catalogue des figures */
+  .cat-title { font-family: var(--display, inherit); font-size: 34px; font-weight: 600; letter-spacing: -1px; margin: 0 0 8px; }
+  .cat-list { margin-bottom: 22px; }
+  .cat-row { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; background: none; border: none; border-top: 1px solid var(--border); border-radius: 0; padding: 14px 0; color: var(--text); cursor: pointer; }
+  .cat-row:last-child { border-bottom: 1px solid var(--border); }
+  .cat-row:hover { background: var(--accent-soft); }
+  .cat-row::after { content: ""; flex: none; width: 9px; height: 9px; border-right: 2px solid var(--muted); border-top: 2px solid var(--muted); transform: rotate(45deg); margin-right: 6px; }
+  .cat-stamp { flex: none; width: 56px; height: 56px; transform: rotate(-8deg); }
+  .cat-stamp .stamp { width: 100%; height: 100%; }
+  .cat-main { flex: 1; min-width: 0; }
+  .cat-name { display: block; font-size: 18px; font-weight: 600; letter-spacing: -0.3px; }
+  .cat-motor { display: block; font-size: 14px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
+  .cat-link { margin-top: -10px; margin-bottom: 14px; }
   .header-right { display: flex; align-items: center; gap: 10px; }
   .home-btn {
     display: inline-flex;
@@ -753,12 +766,13 @@
       <p class="land-lead">Des mises en situation pour te lire de plus près : ce que tu dis de toi, ce que les autres observent. Un profil à lire, à comparer et à partager.</p>
       <button class="btn-primary" onclick="goHome()">Commencer</button>
       <button class="btn-quiet" onclick="document.getElementById('concept').scrollIntoView({ behavior: 'smooth' })">Comment ça marche</button>
+      <button class="btn-quiet" onclick="openCatalog()">Découvrir les profils</button>
     </section>
 
     <section class="land-sec paper" id="concept">
       <h2 class="land-h"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-compass"/></svg>Le concept</h2>
       <p class="land-p">Un archétype est une façon universelle d'agir et de se raconter : le héros qui relève les défis, le sage qui cherche à comprendre, le créateur qui bâtit une œuvre. Tu les portes tous un peu. Archétypes Lab montre lesquels ressortent chez toi.</p>
-      <p class="land-p muted">Ce sont des cadres de réflexion inspirés de Carl Jung, de Carol Pearson et de modèles populaires d'archétypes féminins : pas des cases, pas un diagnostic.</p>
+      <p class="land-p muted">Ce sont des cadres de réflexion inspirés de Carl Jung, de Carol Pearson, de Moore et Gillette et de modèles populaires d'archétypes féminins : pas des cases, pas un diagnostic.</p>
       <div class="steps">
         <div class="step" style="--c: var(--c-orange)">
           <div class="step-num">1</div>
@@ -777,6 +791,7 @@
 
     <section class="land-sec">
       <h2 class="land-h"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-pair"/></svg>Deux univers</h2>
+      <p class="land-p">Tu peux lire tous les profils avant de décider de passer le test.</p>
       <div class="uni-grid">
         <button class="uni-card" style="--c: var(--c-turquoise)" onclick="startWith('12')">
           <div class="dots" id="dots12"></div>
@@ -791,6 +806,7 @@
           <span class="uni-go">Commencer avec cet univers</span>
         </button>
       </div>
+      <button class="btn-secondary" onclick="openCatalog()">Consulter les profils sans passer le test</button>
     </section>
 
     <section class="land-sec paper">
@@ -838,6 +854,7 @@
     </div>
 
     <p class="lead">Des mises en situation pour te lire de plus près. Rien ne quitte ton téléphone.</p>
+    <button class="btn-quiet cat-link" onclick="openCatalog(state.universe)">Consulter les profils de cet univers</button>
 
     <div class="card paper">
       <h2 class="card-title">Combien de questions ?</h2>
@@ -987,6 +1004,18 @@
     <button class="btn-secondary" id="backBtn" onclick="goHome()">Nouvelle session</button>
   </div>
 
+  <!-- CATALOGUE DES FIGURES : consulter les profils sans passer le test -->
+  <div id="viewCatalog" class="hidden">
+    <h1 class="cat-title">Les figures</h1>
+    <p class="lead">Lis chaque profil sans passer le test : ce qui le motive, ses relations, sa zone d'ombre.</p>
+    <div class="segmented" role="group" aria-label="Choisir l'univers">
+      <button class="seg-btn active" id="btnCat12" onclick="setCatalog('12')">Les 12 Figures<span class="seg-sub">masculines</span></button>
+      <button class="seg-btn" id="btnCat7" onclick="setCatalog('7')">Les 7 Figures<span class="seg-sub">féminines</span></button>
+    </div>
+    <div class="cat-list" id="catalogList"></div>
+    <button class="btn-primary cat-start" onclick="startFromCatalog()">Passer le test</button>
+  </div>
+
   <!-- FICHE D'UN PROFIL TYPE -->
   <div id="viewFiche" class="hidden">
     <div class="card fiche-head">
@@ -995,7 +1024,7 @@
       <p class="fiche-motor" id="ficheMotor"></p>
     </div>
     <div class="card paper" id="ficheBody"></div>
-    <button class="btn-primary" onclick="closeFiche()">Retour au résultat</button>
+    <button class="btn-primary" id="ficheBack" onclick="closeFiche()">Retour au résultat</button>
   </div>
 
   <div class="app-footer">Archétypes Lab <span id="appVersion"></span><br>Outil de réflexion personnelle, pas un diagnostic psychologique.</div>
@@ -1003,7 +1032,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.16.1';
+const APP_VERSION = 'v0.17.0';
 
 const META_12 = {
   "Roi": { full: "Le Roi", motor: "Structurer, gouverner et garantir la stabilité.", shadow: "Tyrannie, ou abdication et laisser-faire." },
@@ -2084,7 +2113,8 @@ async function copySummary() {
 }
 
 // --- Fiche d'un profil type -----------------------------------------------------------------------
-function openFicheKey(key, universe) {
+function openFicheKey(key, universe, from) {
+  state.ficheFrom = from || 'result';   // d'où l'on vient : le résultat ou le catalogue des figures
   const uni = universe || state.universe;
   const meta = uni === '12' ? META_12 : META_7;
   if (!meta[key]) return;
@@ -2126,6 +2156,8 @@ function openFicheKey(key, universe) {
     body.appendChild(note);
   }
   document.getElementById('viewResult').classList.add('hidden');
+  document.getElementById('viewCatalog').classList.add('hidden');
+  document.getElementById('ficheBack').textContent = state.ficheFrom === 'catalog' ? 'Retour aux figures' : 'Retour au résultat';
   document.getElementById('viewFiche').classList.remove('hidden');
   window.scrollTo && window.scrollTo(0, 0);
 }
@@ -2135,8 +2167,48 @@ function openFiche(index) {
 }
 function closeFiche() {
   document.getElementById('viewFiche').classList.add('hidden');
-  document.getElementById('viewResult').classList.remove('hidden');
+  document.getElementById(state.ficheFrom === 'catalog' ? 'viewCatalog' : 'viewResult').classList.remove('hidden');
   window.scrollTo && window.scrollTo(0, 0);
+}
+
+// --- Catalogue des figures : lire les profils sans passer le test ---------------------------------
+function renderCatalog() {
+  const uni = state.catalogUniverse || '12';
+  const meta = uni === '12' ? META_12 : META_7;
+  document.getElementById('btnCat12').classList.toggle('active', uni === '12');
+  document.getElementById('btnCat7').classList.toggle('active', uni === '7');
+  document.body.classList.toggle('theme-women', uni === '7');   // la page prend les couleurs de l'univers consulté
+  const list = document.getElementById('catalogList');
+  list.innerHTML = '';
+  Object.keys(meta).forEach(key => {
+    const row = document.createElement('button');
+    row.className = 'cat-row';
+    if (row.setAttribute) row.setAttribute('aria-label', 'Voir la fiche : ' + meta[key].full);
+    row.onclick = () => openFicheKey(key, uni, 'catalog');
+    row.innerHTML = '<span class="cat-stamp">' + stampSvg(key, meta[key].full, 56, { color: archColor(key) }) + '</span>' +
+      '<span class="cat-main"><span class="cat-name">' + meta[key].full + '</span><span class="cat-motor">' + meta[key].motor + '</span></span>';
+    list.appendChild(row);
+  });
+}
+function openCatalog(universe) {
+  state.catalogUniverse = universe || state.universe || '12';
+  ['viewLanding', 'viewHome', 'viewQuiz', 'viewResult', 'viewFiche'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  document.getElementById('viewCatalog').classList.remove('hidden');
+  renderCatalog();
+  updateNav();
+  window.scrollTo && window.scrollTo(0, 0);
+}
+function setCatalog(universe) {
+  state.catalogUniverse = universe;
+  renderCatalog();
+}
+// Rend à la page son thème d'origine (celui de l'univers choisi pour le test) quand on quitte le catalogue.
+function restoreTheme() {
+  document.body.classList.toggle('theme-women', state.universe === '7');
+}
+function startFromCatalog() {
+  setUniverse(state.catalogUniverse || '12');
+  goHome();
 }
 
 // --- Envoi par e-mail : le texte du profil est prérempli dans l'application e-mail de l'appareil ----
@@ -2217,7 +2289,8 @@ function goLanding() {
   state.leaveArmed = false;
   label.textContent = 'Accueil';
   clearInterval(state.timerId);
-  ['viewHome', 'viewQuiz', 'viewResult', 'viewFiche'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  ['viewHome', 'viewQuiz', 'viewResult', 'viewFiche', 'viewCatalog'].forEach(id => document.getElementById(id).classList.add('hidden'));
+  restoreTheme();
   document.getElementById('viewLanding').classList.remove('hidden');
   updateNav();
   window.scrollTo && window.scrollTo(0, 0);
@@ -2576,6 +2649,8 @@ function clearDuo() {
 }
 
 function goHome() {
+  document.getElementById('viewCatalog').classList.add('hidden');
+  restoreTheme();
   document.getElementById('viewLanding').classList.add('hidden');
   document.getElementById('viewFiche').classList.add('hidden');
   document.getElementById('viewQuiz').classList.add('hidden');

@@ -33,7 +33,7 @@ const ctx = {
   navigator: {}, location: { protocol: 'file:' },
 };
 vm.createContext(ctx);
-vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.B12=BANK_12;this.B7=BANK_7;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
+vm.runInContext(script + `;this.S=state;this.start=startQuiz;this.choose=chooseOption;this.skip=skipQuestion;this.setU=setUniverse;this.duo=prepareDuoCompare;this.synth=buildSynthesis;this.M12=META_12;this.M7=META_7;this.SYN=SYNTH;this.setLen=setLength;this.setMode=selectMode;this.eff=effectiveLength;this.strength=profileStrength;this.randTop=randomTopFor;this.refine=refineSession;this.refineN=refineCount;this.hist=loadHistory;this.openH=openHistory;this.delH=deleteHistory;this.clrH=clearHistory;this.shareText=buildShareText;this.card=drawShareCard;this.stamp=stampSvg;this.icons=STAMP_ICONS;this.figs=FIGURES;this.openFK=openFicheKey;this.closeF=closeFiche;this.mailUrl=buildEmailUrl;this.openCat=openCatalog;this.setCat=setCatalog;this.startCat=startFromCatalog;this.B12=BANK_12;this.B7=BANK_7;this.pdf=buildPdf;this.rep=buildReportContent;this.drawRep=drawReport;this.landing=renderLanding;this.goLand=goLanding;this.goHome=goHome;this.archColor=archColor;this.colors=ARCH_COLORS;`, ctx);
 
 let fail = 0;
 const ok = (c, m) => { console.log((c ? 'OK  ' : 'FAIL') + ' ' + m); if (!c) fail++; };
@@ -282,6 +282,30 @@ const repPromise = ctx.drawRep(rrr);
   store['arch_history'] = JSON.stringify([{ id: 777, universe: '12', mode: 'decl', modeLabel: 'x', subject: 't', total: 10, answered: 10, adj: {}, order: ['Souverain', 'Innocent', 'Sage', 'Homme ordinaire', 'Magicien', 'Hors-la-loi', 'Explorateur', 'Créateur', 'Héros', 'Protecteur', 'Amoureux', 'Bouffon'], v: 'v0.15.0' }]);
   ok(ctx.hist().length === 0, 'historique : un ancien résultat du monde mixte (avec Innocent) est ignoré sans erreur');
   delete store['arch_history'];
+}
+
+// 4l. Catalogue des figures : lire les profils sans passer le test
+{
+  ctx.goLand();
+  ok(/sans passer le test/.test(landingHtml) && /openCatalog\(\)/.test(landingHtml), "catalogue : accessible depuis l'accueil");
+  const qBefore = ctx.S.answered.length;
+  ctx.openCat('12');
+  ok(!els.viewCatalog.classList.contains('hidden') && els.viewLanding.classList.contains('hidden') && els.viewQuiz.classList.contains('hidden'), "catalogue : la page s'ouvre sans lancer de session");
+  ok(els.catalogList.children.length === 12 && /Le Roi/.test(els.catalogList.children[0].innerHTML) && /Le Guerrier/.test(els.catalogList.children.map(c => c.innerHTML).join(' ')), 'catalogue : les 12 figures masculines sont listées avec leur tampon');
+  ctx.setCat('7');
+  ok(els.catalogList.children.length === 7 && /La Sage/.test(els.catalogList.children.map(c => c.innerHTML).join(' ')) && els.btnCat7.classList.contains('active') && !els.btnCat12.classList.contains('active'), 'catalogue : bascule vers les 7 figures féminines');
+  els.catalogList.children[3].onclick();
+  ok(!els.viewFiche.classList.contains('hidden') && els.viewCatalog.classList.contains('hidden') && els.ficheName.textContent === 'La Reine' && els.ficheBack.textContent === 'Retour aux figures', 'catalogue : une figure ouvre sa fiche, avec le retour « aux figures »');
+  ctx.closeF();
+  ok(!els.viewCatalog.classList.contains('hidden') && els.viewFiche.classList.contains('hidden') && els.viewResult.classList.contains('hidden'), 'catalogue : le retour ramène au catalogue, pas aux résultats');
+  ctx.startCat();
+  ok(!els.viewHome.classList.contains('hidden') && els.viewCatalog.classList.contains('hidden') && ctx.S.universe === '7', "catalogue : « Passer le test » ouvre les réglages de l'univers consulté");
+  ok(ctx.S.answered.length === qBefore, 'catalogue : aucune réponse enregistrée pendant la consultation');
+  ctx.openCat('12'); ctx.goLand();
+  ok(els.viewCatalog.classList.contains('hidden') && !els.viewLanding.classList.contains('hidden'), 'catalogue : le bouton Accueil le ferme');
+  ctx.openFK('Roi', '12');
+  ok(els.ficheBack.textContent === 'Retour au résultat', 'fiche ouverte depuis un résultat : le bouton reste « Retour au résultat »');
+  ctx.setU('12'); ctx.goHome();
 }
 
 // 5. PWA : fichiers et cohérence des versions
