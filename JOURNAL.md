@@ -16,6 +16,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.8.0 | 2026-11-23 | Tutoiement | Tout le contenu passe au **tutoiement** (200 questions, synthèse, interface), choix de l'auteur pour un public jeune ; charte et contrôle automatique inversés |
 | v0.9.0 | 2026-11-23 | Affinage visuel | Même identité (bleu nuit et or), interface plus claire : accueil simplifié, mode replié, question sans surtitre, résultats à barres, radar sans étiquettes coupées, états de focus, animation discrète, zoom autorisé ; « Déesses » devient « Princesses » dans l'intitulé |
 | v0.10.0 | 2026-11-23 | Suite | Les quatre améliorations : historique local, partage (carte image + texte), « Affiner » (+10 questions sur la même session), seuils de force du profil calibrés sur des réponses au hasard |
+| v0.17.6 | 2026-11-28 | La Curieuse | « La Jeune fille » devient « La Curieuse » |
 | v0.17.5 | 2026-11-28 | Radar féminin | Les 7 profils féminins sont placés par proximité : La Reine, La Sage, La Mystique, La Chasseresse, L'Amante, La Jeune fille, La Mère |
 | v0.17.4 | 2026-11-28 | Ordre du radar | Les 12 figures sont placées par proximité sur le radar : Roi, Guerrier, Héros, Rebelle, Explorateur, Sage, Magicien, Créateur, Bouffon, Amant, Soignant, Père |
 | v0.17.3 | 2026-11-28 | Pas de surbrillance | Au toucher, aucune réponse n'est mise en surbrillance pendant le questionnaire |
@@ -45,6 +46,9 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 ---
 
 ## Journal des versions et modifications
+
+### v0.17.6 — 2026-11-28 — « La Jeune fille » devient « La Curieuse »
+**Demande.** Remplacer « La Jeune fille ». Six noms ont été comparés (La Curieuse, La Rêveuse, L'Éveillée, La Muse, La Sensible, L'Ingénue) aux six autres profils féminins : « La Curieuse » colle au moteur du profil (réceptivité, curiosité, empathie, souplesse) et ne chevauche aucun autre profil, alors que La Rêveuse et L'Éveillée se rapprochent de La Mystique et La Muse de L'Amante. **Choix de l'auteur : La Curieuse.** Renommé partout (134 occurrences : questions, profil, synthèse, tampon, radar, accueil, outils, documentation). Les anciens résultats portant « La Jeune fille » ou « Perséphone » sont convertis en « La Curieuse » à la lecture. Le tampon (fleur) et les couleurs sont conservés ; l'ordre du radar est inchangé (A57).
 
 ### v0.17.5 — 2026-11-28 — Radar féminin par proximité
 Même méthode que pour les 12 masculines (v0.17.4) : circuit fermé de longueur minimale sur les 6 critères (exact, longueur 530 sur 7 liens, plus grand saut 100). Ordre : La Reine, La Sage, La Mystique, La Chasseresse, L'Amante, La Jeune fille, La Mère. Voisinages : La Sage et La Mystique (écart 50, recul et vie intérieure), La Jeune fille et L'Amante (50, sensibilité et créativité), La Chasseresse près de L'Amante (50). La Mère et La Reine se rejoignent en fin de tour. Un test vérifie que l'ordre reste le circuit le plus court. Le catalogue des figures suit le même ordre (A56).
@@ -302,6 +306,7 @@ Question de l'auteur : quel est le nombre idéal de questions ? Simulation avec 
 | A38 | 2026-11-23 | Accueil affiché à chaque ouverture | Demande explicite d'une page d'accueil ; un bouton « Commencer » mène aux réglages | Mémoriser « déjà vu » pour ouvrir directement les réglages |
 | A39 | 2026-11-23 | Garder « archétype » comme mot unique ; ne pas renommer les figures du monde 12 en « princes » | Mot genré pour des figures mixtes, certaines figures ne sont pas des princes (Bouffon, Souverain), chantier large (accueil, fiches, synthèses, PDF, tests) | « Les 12 Princes » en simple étiquette d'onglet |
 | A40 | 2026-11-23 | Mode clair reporté ; l'alternance crème / bleu nuit est livrée d'abord | Demande de l'auteur : « si difficile, le laisser de côté ». La classe .paper pose les bases (variables locales) | Choix Auto / Clair / Sombre : thème clair complet, versions papier des couleurs d'archétypes pour les tampons et barres, couleur de la barre du navigateur |
+| A57 | 2026-11-28 | « La Jeune fille » renommée « La Curieuse » ; l'historique est converti à la lecture | Connotation jugée peu adaptée par l'auteur ; nom aligné sur le moteur du profil ; aucun chevauchement avec les autres noms | La Rêveuse, L'Éveillée, La Muse |
 | A56 | 2026-11-28 | Appliquer aussi l'ordre par proximité aux 7 profils féminins | Demande de l'auteur ; même méthode et même garantie testée que pour les 12 | Garder l'ordre d'origine des déesses |
 | A55 | 2026-11-28 | Ordonner le radar par proximité des profils, sans afficher alpha / bêta / sigma / gamma | Typologie informelle et contestée ; le rattachement est une interprétation. L'ordre vient des critères, pas de cette typologie | Afficher les familles (écarté par l'auteur), ordre alphabétique ou aléatoire |
 | A54 | 2026-11-28 | Aucun retour visuel au toucher sur les réponses (ni survol, ni appui) ; survol conservé pour la souris | Demande de l'auteur ; le survol collé d'iOS faussait la lecture des réponses | Garder un léger retour à l'appui (écarté : compterait comme surbrillance) |

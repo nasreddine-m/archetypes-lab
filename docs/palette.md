@@ -22,7 +22,7 @@ Douze teintes réparties sur le cercle chromatique (OKLCH), à luminosité et sa
 | Hors-la-loi | #eab7ff | #935faa |
 | Amoureux | #e58fb8 | #8c3865 |
 
-Princesses (depuis v0.15.0) : La Sage = Sage, La Chasseresse = Protecteur, La Mystique = Créateur, La Reine = Souverain, La Mère = Homme ordinaire, La Jeune fille = Magicien, L'Amante = Amoureux.
+Princesses (depuis v0.15.0) : La Sage = Sage, La Chasseresse = Protecteur, La Mystique = Créateur, La Reine = Souverain, La Mère = Homme ordinaire, La Curieuse = Magicien, L'Amante = Amoureux.
 
 ## Recherche (repères retenus)
 - Un fond bleu marine dominant (environ 60 %) avec un accent chaud (environ 10 %) est une base classique et lisible.

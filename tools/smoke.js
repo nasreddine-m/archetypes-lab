@@ -371,7 +371,18 @@ const repPromise = ctx.drawRep(rrr);
   const dd = (a, b) => FEMININS[a].reduce((s, v, i) => s + Math.abs(v - FEMININS[b][i]), 0);
   const longueur = ordre.reduce((s, a, i) => s + dd(a, ordre[(i + 1) % ordre.length]), 0);
   ok(ordre.every(n => FEMININS[n]) && longueur === meilleurCircuit(FEMININS).longueur, "radar : l'ordre des 7 figures féminines est le circuit le plus court (longueur " + longueur + ')');
-  ok(Object.keys(ctx.M7).join() === ["La Reine", "La Sage", "La Mystique", "La Chasseresse", "L'Amante", "La Jeune fille", "La Mère"].join(), 'radar : ordre La Reine, La Sage, La Mystique, La Chasseresse, L\'Amante, La Jeune fille, La Mère');
+  ok(Object.keys(ctx.M7).join() === ["La Reine", "La Sage", "La Mystique", "La Chasseresse", "L'Amante", "La Curieuse", "La Mère"].join(), 'radar : ordre La Reine, La Sage, La Mystique, La Chasseresse, L\'Amante, La Curieuse, La Mère');
+}
+
+// 4r. « La Jeune fille » est devenue « La Curieuse » : les anciens résultats sont convertis
+{
+  const k7 = Object.keys(ctx.M7);
+  const anciens = k7.map(k => k === 'La Curieuse' ? 'La Jeune fille' : k);
+  store['arch_history'] = JSON.stringify([{ id: 31337, universe: '7', mode: 'decl', modeLabel: 'Déclaratif pur', subject: 'T', total: 10, answered: 10, adj: Object.fromEntries(anciens.map((k, i) => [k, 200 - i * 10])), order: anciens, v: 'v0.17.5' }]);
+  const e = ctx.hist()[0];
+  ok(e && e.order.includes('La Curieuse') && !e.order.includes('La Jeune fille') && Object.keys(e.adj).every(k => ctx.M7[k]), 'historique : « La Jeune fille » est convertie en « La Curieuse » à la lecture');
+  ok(!('La Jeune fille' in ctx.M7) && ctx.M7['La Curieuse'] && !/Jeune fille/.test(html.replace('"La Jeune fille":"La Curieuse"', '')), 'monde 7 : plus aucune trace de « Jeune fille » dans l\'application, hors table de conversion');
+  delete store['arch_history'];
 }
 
 // 5. PWA : fichiers et cohérence des versions
