@@ -385,6 +385,19 @@ const repPromise = ctx.drawRep(rrr);
   delete store['arch_history'];
 }
 
+// 4s. Matrice 12 x 12 des profils de base (tools/matrice-profils.js)
+{
+  const { ORDRE, FAMILLES, famille, profilDeBase, matrice } = require('./matrice-profils.js');
+  const m = matrice();
+  const cellules = [];
+  m.forEach((row, i) => row.forEach((c, j) => { if (i !== j) cellules.push(c); }));
+  const compte = Object.fromEntries(FAMILLES.map(f => [f, cellules.filter(c => c === f).length]));
+  ok(JSON.stringify(ORDRE) === JSON.stringify(Object.keys(ctx.M12)), "matrice : les 12 figures sont dans l'ordre du radar de l'application");
+  ok(m.length === 12 && m.every((r, i) => r.length === 12 && r[i] === null) && cellules.length === 132 && cellules.every(c => FAMILLES.includes(c)), 'matrice : 12 x 12, diagonale vide, 132 paires valides, chacune associée à un profil de base');
+  ok(FAMILLES.every(f => compte[f] === 33), 'matrice : répartition parfaitement équilibrée (33 paires par profil de base)');
+  ok(ORDRE.every(a => ORDRE.every(b => a === b || famille(a) !== famille(b) || profilDeBase(a, b) === famille(a))), 'matrice : deux figures de la même famille donnent toujours cette famille');
+}
+
 // 5. PWA : fichiers et cohérence des versions
 const path = require('path'), root = path.join(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
