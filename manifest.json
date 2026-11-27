@@ -1,7 +1,7 @@
 {
   "name": "Archétypes Lab",
   "short_name": "Archétypes",
-  "description": "Questionnaire d'archétypes (12 Archétypes ou 7 Princesses) : outil de réflexion personnelle.",
+  "description": "Questionnaire d'archétypes (12 figures masculines ou 7 figures féminines) : outil de réflexion personnelle.",
   "lang": "fr",
   "start_url": "./index.html",
   "scope": "./",

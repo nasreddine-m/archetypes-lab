@@ -16,6 +16,7 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 | v0.8.0 | 2026-11-23 | Tutoiement | Tout le contenu passe au **tutoiement** (200 questions, synthèse, interface), choix de l'auteur pour un public jeune ; charte et contrôle automatique inversés |
 | v0.9.0 | 2026-11-23 | Affinage visuel | Même identité (bleu nuit et or), interface plus claire : accueil simplifié, mode replié, question sans surtitre, résultats à barres, radar sans étiquettes coupées, états de focus, animation discrète, zoom autorisé ; « Déesses » devient « Princesses » dans l'intitulé |
 | v0.10.0 | 2026-11-23 | Suite | Les quatre améliorations : historique local, partage (carte image + texte), « Affiner » (+10 questions sur la même session), seuils de force du profil calibrés sur des réponses au hasard |
+| v0.16.1 | 2026-11-27 | Noms des univers | Les deux univers s'appellent « Les 12 Figures » (masculines) et « Les 7 Figures » (féminines) ; « Princes » et « Princesses » abandonnés |
 | v0.16.0 | 2026-11-27 | Archétypes masculins | La grille mixte de 12 est remplacée par 12 archétypes masculins (Roi, Père, Guerrier, Magicien, Amant, Sage, Explorateur, Créateur, Héros, Rebelle, Bouffon, Soignant) ; profils définis par 6 critères |
 | v0.15.0 | 2026-11-27 | Profils féminins | Les 7 profils féminins ne portent plus de noms de déesses grecques : La Sage, La Chasseresse, La Mystique, La Reine, La Mère, La Jeune fille, L'Amante |
 | v0.14.1 | 2026-11-24 | Textes de synthèse | Profil peu contrasté : formulations plus humaines (3 variantes), plus de mention du hasard dans le texte ; élision corrigée (« d'analyser ») |
@@ -38,6 +39,9 @@ Objectif final : une application qui tourne sur **iOS (Safari / écran d'accueil
 ---
 
 ## Journal des versions et modifications
+
+### v0.16.1 — 2026-11-27 — Noms des univers
+Après l'abandon de « Les 12 Princes » (le mot ne convient pas à Bouffon, Guerrier ou Père), six pistes ont été proposées (Archétypes masculins / féminins, Visages, Figures, Lui / Elle, Masques, Rôles). **Choix de l'auteur : « Les 12 Figures » et « Les 7 Figures »**, avec le sous-titre « masculines » / « féminines » dans l'onglet et sur la carte d'accueil. « Princesses » disparaît aussi : il ne convenait plus à La Sage, La Mère ou La Reine. Pour éviter l'homonymie, les personnages cités en repère culturel s'appellent désormais « Personnages souvent associés… » (A50).
 
 ### v0.16.0 — 2026-11-27 — Les 12 archétypes masculins remplacent la grille mixte
 **Décision de l'auteur.** Ne garder que deux ensembles : 12 archétypes masculins (liste d'une infographie et de l'article Plexality, issue de Moore et Gillette complétée) et 7 féminins. La grille mixte (Innocent, Homme ordinaire, Souverain, Protecteur, Amoureux, Hors-la-loi…) disparaît. **Infographie fournie.** Utile pour les noms français ; ses pourcentages n'ont pas de source, ne totalisent pas 100 % (ex. 113 %, 115 %, 124 %, 128 %) et ne sont pas utilisés.
@@ -274,6 +278,7 @@ Question de l'auteur : quel est le nombre idéal de questions ? Simulation avec 
 | A38 | 2026-11-23 | Accueil affiché à chaque ouverture | Demande explicite d'une page d'accueil ; un bouton « Commencer » mène aux réglages | Mémoriser « déjà vu » pour ouvrir directement les réglages |
 | A39 | 2026-11-23 | Garder « archétype » comme mot unique ; ne pas renommer les figures du monde 12 en « princes » | Mot genré pour des figures mixtes, certaines figures ne sont pas des princes (Bouffon, Souverain), chantier large (accueil, fiches, synthèses, PDF, tests) | « Les 12 Princes » en simple étiquette d'onglet |
 | A40 | 2026-11-23 | Mode clair reporté ; l'alternance crème / bleu nuit est livrée d'abord | Demande de l'auteur : « si difficile, le laisser de côté ». La classe .paper pose les bases (variables locales) | Choix Auto / Clair / Sombre : thème clair complet, versions papier des couleurs d'archétypes pour les tampons et barres, couleur de la barre du navigateur |
+| A50 | 2026-11-27 | Univers nommés « Les 12 Figures » et « Les 7 Figures » ; repères culturels renommés « Personnages » | Sobre, culturel, sans connotation royale ni genrée dans le nom ; évite l'homonymie avec « figures associées » | Archétypes masculins / féminins, Visages, Lui / Elle |
 | A47 | 2026-11-27 | Les anciens résultats du monde mixte sont ignorés (non convertibles) | La grille a changé : l'Innocent et l'Homme ordinaire n'existent plus | Les garder en lecture seule avec l'ancienne grille |
 | A48 | 2026-11-27 | Les pourcentages de l'infographie ne sont pas repris ; les profils sont définis par mes propres critères | Aucune source, totaux supérieurs à 100 % | Reprendre l'infographie telle quelle |
 | A49 | 2026-11-27 | Le Père et le Soignant restent deux profils distincts (protéger et subvenir / prendre soin et servir) | Les deux figurent dans la liste ; écart de 50 sur 200 | Fusionner en un seul |

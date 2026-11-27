@@ -107,6 +107,7 @@
     transition: background 0.25s var(--ease), color 0.25s var(--ease);
   }
   .seg-btn:hover { color: var(--text); }
+  .seg-sub { display: block; font-size: 12px; font-weight: 400; opacity: 0.8; margin-top: 1px; }
   .seg-btn.active {
     background: var(--accent);
     color: var(--accent-ink);
@@ -779,14 +780,14 @@
       <div class="uni-grid">
         <button class="uni-card" style="--c: var(--c-turquoise)" onclick="startWith('12')">
           <div class="dots" id="dots12"></div>
-          <h3>Les 12 Archétypes</h3>
-          <p>Un monde au masculin : le Roi, le Père, le Guerrier, le Magicien, l'Amant, le Sage…</p>
+          <h3>Les 12 Figures</h3>
+          <p>Archétypes masculins : le Roi, le Père, le Guerrier, le Magicien, l'Amant, le Sage…</p>
           <span class="uni-go">Commencer avec cet univers</span>
         </button>
         <button class="uni-card" style="--c: var(--c-rose)" onclick="startWith('7')">
           <div class="dots" id="dots7"></div>
-          <h3>Les 7 Princesses</h3>
-          <p>Un monde au féminin : la Sage, la Chasseresse, la Mystique, la Reine, la Mère, la Jeune fille, l'Amante.</p>
+          <h3>Les 7 Figures</h3>
+          <p>Archétypes féminins : la Sage, la Chasseresse, la Mystique, la Reine, la Mère, la Jeune fille, l'Amante.</p>
           <span class="uni-go">Commencer avec cet univers</span>
         </button>
       </div>
@@ -832,8 +833,8 @@
   <!-- HOME VIEW -->
   <div id="viewHome" class="hidden">
     <div class="segmented">
-      <button class="seg-btn active" id="btnUniv12" onclick="setUniverse('12')">Les 12 Archétypes</button>
-      <button class="seg-btn" id="btnUniv7" onclick="setUniverse('7')">Les 7 Princesses</button>
+      <button class="seg-btn active" id="btnUniv12" onclick="setUniverse('12')">Les 12 Figures<span class="seg-sub">masculines</span></button>
+      <button class="seg-btn" id="btnUniv7" onclick="setUniverse('7')">Les 7 Figures<span class="seg-sub">féminines</span></button>
     </div>
 
     <p class="lead">Des mises en situation pour te lire de plus près. Rien ne quitte ton téléphone.</p>
@@ -1002,7 +1003,7 @@
 
 <script>
 // Doit rester identique à CACHE_VERSION dans sw.js (vérifié par tools/smoke.js).
-const APP_VERSION = 'v0.16.0';
+const APP_VERSION = 'v0.16.1';
 
 const META_12 = {
   "Roi": { full: "Le Roi", motor: "Structurer, gouverner et garantir la stabilité.", shadow: "Tyrannie, ou abdication et laisser-faire." },
@@ -1419,7 +1420,7 @@ function buildSynthesis(meta, order, adj, answeredCount, strength = 'clear') {
   }
   const p2 = `Dans les relations, ${s1.relation}. Zone d'ombre possible : ${lc(meta[k1].shadow.replace(/\.$/, ''))}. ` +
     `Piste pour progresser : ${s1.piste}.` +
-    (FIGURES[k1] ? ` Figures souvent associées ${aName(n1)} (repères culturels) : ${FIGURES[k1].join(', ')}.` : '');
+    (FIGURES[k1] ? ` Personnages souvent associés ${aName(n1)} (repères culturels) : ${FIGURES[k1].join(', ')}.` : '');
   const low = order.slice(-2).map(k => inSentence(meta[k].full));
   const p3 = `Les archétypes les moins mobilisés dans cette session sont ${low[0]} et ${low[1]} : cela ne dit rien de tes capacités, ` +
     `seulement de ce que tu as choisi parmi ces ${answeredCount} questions. Ce portrait est un point de départ pour la réflexion, pas un diagnostic.`;
@@ -2113,7 +2114,7 @@ function openFicheKey(key, universe) {
   if (FIGURES[key]) {
     const h = document.createElement('h3');
     h.className = 'fiche-h';
-    h.textContent = 'Figures souvent associées';
+    h.textContent = 'Personnages souvent associés';
     const p = document.createElement('p');
     p.className = 'fiche-p';
     p.textContent = FIGURES[key].join(', ') + '.';

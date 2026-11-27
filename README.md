@@ -1,6 +1,6 @@
 # Archétypes Lab
 
-Petite application web (iPhone / Chrome) : questionnaire d'archétypes (12 Archétypes ou 7 Déesses), modes déclaratif et observation, radar, comparaison Duo.
+Petite application web (iPhone / Chrome) : questionnaire d'archétypes (12 Figures masculines ou 7 Figures féminines), modes déclaratif et observation, radar, comparaison Duo.
 
 Outil de réflexion personnelle, pas un diagnostic psychologique.
 

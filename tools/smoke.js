@@ -191,9 +191,9 @@ ok(svgs.every((sv, i) => sv.includes('<svg') && sv.includes('</svg>') && sv.incl
 ok(Object.keys(ctx.figs).every(k => ctx.M12[k]) && !ctx.figs['Bouffon'] && !Object.keys(ctx.M7).some(k => ctx.figs[k]), 'figures : seulement des archétypes du monde 12, aucune pour Bouffon ni pour les Princesses');
 const adjS = Object.fromEntries(k12.map(k => [k, 80])); adjS.Sage = 300; adjS.Magicien = 250;
 const txtSage = ctx.synth(ctx.M12, ['Sage', 'Magicien', ...k12.filter(k => k !== 'Sage' && k !== 'Magicien')], adjS, 20).join(' ');
-ok(txtSage.includes('associées au Sage (repères culturels) : Albert Einstein'), 'synthèse : figures associées au n° 1, avec la mention « repères culturels »');
+ok(txtSage.includes('associés au Sage (repères culturels) : Albert Einstein'), 'synthèse : figures associées au n° 1, avec la mention « repères culturels »');
 const txtBouf = ctx.synth(ctx.M12, ['Bouffon', 'Sage', ...k12.filter(k => k !== 'Sage' && k !== 'Bouffon')], adjS, 20).join(' ');
-ok(!/Figures souvent associées/.test(txtBouf), 'synthèse : aucune figure inventée pour un archétype sans source (Bouffon)');
+ok(!/Personnages souvent associés/.test(txtBouf), 'synthèse : aucune figure inventée pour un archétype sans source (Bouffon)');
 ctx.setU('12'); ctx.setMode('decl'); ctx.setLen(10); ctx.start(); finishAll();
 const top1k = ctx.S.lastResult.order[0];
 ctx.openFK(top1k, '12');
@@ -202,7 +202,7 @@ ok(els.ficheBody.children.length >= 8, 'fiche : 4 sections (titre + texte) au mi
 ctx.closeF();
 ok(els.viewFiche.classList.contains('hidden') && !els.viewResult.classList.contains('hidden'), 'fiche : retour au résultat');
 ctx.openFK('La Sage', '7');
-ok(els.ficheName.textContent === 'La Sage' && !/Figures souvent associées/.test(els.ficheBody.children.map(c => c.textContent).join(' ')), 'fiche Princesses : ouverture sans figure associée');
+ok(els.ficheName.textContent === 'La Sage' && !/Personnages souvent associés/.test(els.ficheBody.children.map(c => c.textContent).join(' ')), 'fiche Princesses : ouverture sans figure associée');
 ctx.closeF();
 const mail = ctx.mailUrl(ctx.S.lastResult);
 ok(mail.startsWith('mailto:?subject=') && mail.length < 1950 && decodeURIComponent(mail).includes('pas un diagnostic') && decodeURIComponent(mail).includes('nasreddine-m.github.io/archetypes-lab'), 'e-mail : lien mailto avec sujet, texte, mention et lien, moins de 1950 caractères');
@@ -210,7 +210,7 @@ ok(mail.startsWith('mailto:?subject=') && mail.length < 1950 && decodeURICompone
 // 4h. Page d'accueil, navigation, palette élargie, rapport PDF
 ok(/id="viewLanding"/.test(html) && /id="homeBtn"/.test(html) && /id="viewHome" class="hidden"/.test(html), 'accueil : page d\'accueil présente, réglages masqués au départ, bouton Accueil dans l\'en-tête');
 const landingHtml = html.slice(html.indexOf('id="viewLanding"'), html.indexOf('<!-- HOME VIEW -->'));
-ok(['Déclaratif pur', 'Observation pure', 'Mixte équilibré', 'Dilemmes &amp; pression', 'Miroir social', 'Tirage intégral', 'Aperçu', 'Standard', 'Approfondi', 'Duo', 'affiner', 'Princesses', 'rapport PDF'].every(t => landingHtml.includes(t)), 'accueil : concept, deux univers, six modes, longueurs, Duo, affiner et rapport expliqués');
+ok(['Déclaratif pur', 'Observation pure', 'Mixte équilibré', 'Dilemmes &amp; pression', 'Miroir social', 'Tirage intégral', 'Aperçu', 'Standard', 'Approfondi', 'Duo', 'affiner', 'Les 7 Figures', 'Les 12 Figures', 'rapport PDF'].every(t => landingHtml.includes(t)), 'accueil : concept, deux univers, six modes, longueurs, Duo, affiner et rapport expliqués');
 ctx.landing();
 ok((els.landOrb.innerHTML.match(/class="petal"/g) || []).length === 12 && els.dots12.children.length === 12 && els.dots7.children.length === 7, 'accueil : illustration (rosace de 12 pétales) et pastilles 12 / 7');
 ctx.goHome();
